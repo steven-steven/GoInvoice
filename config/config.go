@@ -16,9 +16,9 @@ type config struct {
 	Firebase	map[string]string	`json:"firebase"`
 }
 
-func getEnv() (config, error) {
+func getEnv() (*config, error) {
 	v := viper.New()
-	v.SetConfigFile("config.json")
+	v.SetConfigFile("config/config.json")
 	err := v.ReadInConfig()
 	if err != nil {
 		log.Fatalf("Error while reading config file %s", err)
@@ -27,10 +27,10 @@ func getEnv() (config, error) {
 	C := config{}
 	err = v.Unmarshal(&C)
 	if err != nil {
-		log.Fatalf("Invalid type assertion")
+		log.Fatalf("Invalid type assertion %s", err)
 		return nil, err
 	}
-	return C, nil
+	return &C, nil
 }
 
 func GetDBInstance(ctx context.Context) (*db.Client, error) {
@@ -39,7 +39,7 @@ func GetDBInstance(ctx context.Context) (*db.Client, error) {
 	}
 
 	//Admin Previlege
-	key := getEnv()
+	key, _ := getEnv()
 	j, _ := json.Marshal(key.Firebase)
 	opt := option.WithCredentialsJSON(j)
 

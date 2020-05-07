@@ -2,14 +2,13 @@ package invoice
 
 import (
     "context"
-    "errors"
 
     "github.com/go-kit/kit/endpoint"
 )
 
 // Endpoints are exposed
 type Endpoints struct {
-    PostInvoiceEndpoint      endpoint.Endpoint
+    PostInvoiceEndpoint     endpoint.Endpoint
     GetInvoiceEndpoint   	endpoint.Endpoint
 	PutInvoiceEndpoint 		endpoint.Endpoint
 	GetAllInvoiceEndpoint 	endpoint.Endpoint
@@ -18,44 +17,44 @@ type Endpoints struct {
 //Make Endpoints
 func MakePostInvoiceEndpoint(srv Service) endpoint.Endpoint {
     return func(ctx context.Context, request interface{}) (interface{}, error) {
-        req = request.(postInvoiceRequest)
-        inv, err := srv.PostInvoice(ctx, req)
+        req := request.(postInvoiceRequest)
+        inv, err := srv.PostInvoice(ctx, req.Invoice)
         if err != nil {
-            return postInvoiceResponse{}, err.Error()
+            return postInvoiceResponse{}, err
         }
-        return postInvoiceResponse{inv}, nil
+        return postInvoiceResponse{Invoice: inv}, nil
     }
 }
 
 func MakeGetInvoiceEndpoint(srv Service) endpoint.Endpoint {
     return func(ctx context.Context, request interface{}) (interface{}, error) {
-        req = request.(getInvoiceRequest)
-        inv, err := srv.GetInvoice(ctx, req)
+        req := request.(getInvoiceRequest)
+        inv, err := srv.GetInvoice(ctx, req.ID)
         if err != nil {
-            return getInvoiceResponse{}, err.Error()
+            return getInvoiceResponse{}, err
         }
-        return getInvoiceResponse{inv}, nil
+        return getInvoiceResponse{Invoice: inv}, nil
     }
 }
 
 func MakePutInvoiceEndpoint(srv Service) endpoint.Endpoint {
     return func(ctx context.Context, request interface{}) (interface{}, error) {
         req := request.(putInvoiceRequest)
-        res, err := srv.PutInvoice(ctx, req)
+        res, err := srv.PutInvoice(ctx, req.Invoice)
         if err != nil {
-            return putInvoiceResponse{res}, err.Error()
+            return putInvoiceResponse{}, err
         }
-        return putInvoiceResponse{res}, nil
+        return putInvoiceResponse{Invoice: res}, nil
     }
 }
 
 func MakeGetAllInvoiceEndpoint(srv Service) endpoint.Endpoint {
     return func(ctx context.Context, request interface{}) (interface{}, error) {
-        req := request.(getAllInvoiceRequest)
-        res, err := srv.GetAllInvoice(ctx, req)
+        _ = request.(getAllInvoiceRequest)
+        res, err := srv.GetAllInvoice(ctx)
         if err != nil {
-            return getAllInvoiceResponse{res}, err.Error()
+            return getAllInvoiceResponse{}, err
         }
-        return getAllInvoiceResponse{res}, nil
+        return getAllInvoiceResponse{Invoices: res}, nil
     }
 }

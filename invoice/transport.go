@@ -7,15 +7,11 @@ import (
 )
 
 type postInvoiceRequest struct{
-	Client		string	`json:"client"`
-	Date      	string  `json:"date"`
-	Items 		[]Item 	`json:"items"`
-	Tax			uint32	`json:"tax,omitempty"`
+	Invoice
 }
 
 type postInvoiceResponse struct {
-	ID			int
-    Invoice		Invoice
+    Invoice		Invoice_db
 }
 
 type getInvoiceRequest struct {
@@ -23,28 +19,21 @@ type getInvoiceRequest struct {
 }
 
 type getInvoiceResponse struct {
-    ID			int
-    Invoice		Invoice
+    Invoice		Invoice_db
 }
 
 type putInvoiceRequest struct{
-	Client		string	`json:"client"`
-	Date      	string  `json:"date"`
-	Items 		[]Item 	`json:"items"`
-	Tax			uint32	`json:"tax,omitempty"`
+	Invoice
 }
 
 type putInvoiceResponse struct {
-    ID			int
-    Invoice		Invoice
+    Invoice		Invoice_db
 }
 
-type getAllInvoiceRequest struct{
-	Invoice		Invoice
-}
+type getAllInvoiceRequest struct{}
 
 type getAllInvoiceResponse struct {
-    Invoices 	map[int]Invoice
+    Invoices 	map[int]Invoice_db
 }
 
 // Models to JSON
@@ -75,7 +64,7 @@ func decodePutInvoiceRequest(ctx context.Context, r *http.Request) (interface{},
     return req, nil
 }
 
-func decodeGetAllInvoiceResponse(ctx context.Context, r *http.Request) (interface{}, error) {
+func decodeGetAllInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
     var req getAllInvoiceRequest
     err := json.NewDecoder(r.Body).Decode(&req)
     if err != nil {

@@ -33,9 +33,9 @@ func main() {
     // mapping endpoints
     endpoints := invoice.Endpoints{
 		PostInvoiceEndpoint:	invoice.MakePostInvoiceEndpoint(srv),
-		GetInvoiceEndpoint   	invoice.MakeGetInvoiceEndpoint(srv),
-		PutInvoiceEndpoint 		invoice.MakePutInvoiceEndpoint(srv),
-		GetAllInvoiceEndpoint 	invoice.MakeGetAllInvoiceEndpoint(srv),
+		GetInvoiceEndpoint:   	invoice.MakeGetInvoiceEndpoint(srv),
+		PutInvoiceEndpoint: 	invoice.MakePutInvoiceEndpoint(srv),
+		GetAllInvoiceEndpoint: 	invoice.MakeGetAllInvoiceEndpoint(srv),
 	}
 
     // HTTP transport

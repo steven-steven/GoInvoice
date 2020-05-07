@@ -1,4 +1,4 @@
-package napodate
+package invoice
 
 import (
     "context"
@@ -7,13 +7,6 @@ import (
     httptransport "github.com/go-kit/kit/transport/http"
     "github.com/gorilla/mux"
 )
-
-type Endpoints struct {
-    PostInvoiceEndpoint     endpoint.Endpoint
-    GetInvoiceEndpoint   	endpoint.Endpoint
-	PutInvoiceEndpoint 		endpoint.Endpoint
-	GetAllInvoiceEndpoint 	endpoint.Endpoint
-}
 
 func NewHTTPServer(ctx context.Context, endpoints Endpoints) http.Handler {
     r := mux.NewRouter()
