@@ -11,6 +11,7 @@ type Endpoints struct {
     PostInvoiceEndpoint     endpoint.Endpoint
     GetInvoiceEndpoint   	endpoint.Endpoint
 	PutInvoiceEndpoint 		endpoint.Endpoint
+	DeleteInvoiceEndpoint 	endpoint.Endpoint
 	GetAllInvoiceEndpoint 	endpoint.Endpoint
 }
 
@@ -45,6 +46,17 @@ func MakePutInvoiceEndpoint(srv Service) endpoint.Endpoint {
             return putInvoiceResponse{}, err
         }
         return putInvoiceResponse{Invoice: res}, nil
+    }
+}
+
+func MakeDeleteInvoiceEndpoint(srv Service) endpoint.Endpoint {
+    return func(ctx context.Context, request interface{}) (interface{}, error) {
+        req := request.(deleteInvoiceRequest)
+        res, err := srv.DeleteInvoice(ctx, req.ID)
+        if err != nil {
+            return deleteInvoiceResponse{}, err
+        }
+        return deleteInvoiceResponse{success: res}, nil
     }
 }
 

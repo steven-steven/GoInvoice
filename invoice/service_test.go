@@ -10,13 +10,6 @@ import (
     "github.com/steven-steven/GoInvoice/config"
 )
 
-// type Service interface {
-//     PostInvoice(ctx context.Context, inv Invoice) (Invoice_db, error)
-// 	GetInvoice(ctx context.Context, id int) (Invoice_db, error)
-// 	PutInvoice(ctx context.Context, id int, inv Invoice) (Invoice_db, error)
-// 	GetAllInvoice(ctx context.Context) (map[int]Invoice_db, error)
-// }
-
 func TestPostInvoice(t *testing.T) {
 	srv, ctx := setup()	//new test DB
 	
@@ -57,7 +50,7 @@ func TestGetInvoice(t *testing.T) {
     }{
         "successful get": {
             input:  2,
-            output:	Invoice_db{Invoice{"PT B","24/03/2020",[]Item{Item{"Paku",10000,3,30000}},5000},1,time.Now().Format("02/01/2006")},
+            output:	Invoice_db{Invoice{"PT B","24/03/2020",[]Item{Item{"Batu",10000,3,30000}},6000},2,time.Now().Format("02/01/2006")},
            	err:    nil,
 		},
 	}
@@ -88,7 +81,7 @@ func TestPutInvoice(t *testing.T) {
         "successful put": {
 			input_id:	2,
             input:  	Invoice{"PT C","24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000},
-            output:		Invoice_db{Invoice{"PT C","24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000},1,time.Now().Format("02/01/2006")},
+            output:		Invoice_db{Invoice{"PT C","24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000},2,time.Now().Format("02/01/2006")},
            	err:    	nil,
 		},
 	}
@@ -100,6 +93,42 @@ func TestPutInvoice(t *testing.T) {
 			assert.IsType(t, test.err, err)
 			assert.EqualValues(t, test.output, output)
 			//check get returns updated
+			after, errAfter := srv.GetInvoice(ctx, test.input_id)
+			assert.IsType(t, nil, errAfter)
+			assert.EqualValues(t, test.output, after)
+		})
+	}
+}
+
+func TestDeleteInvoice(t *testing.T) {
+	srv, ctx := setup()	//new test DB
+	
+	//initial data
+	srv.PostInvoice(ctx, Invoice{"PT B","24/03/2020",[]Item{Item{"Batu",10000,3,30000}},6000})
+	srv.PostInvoice(ctx, Invoice{"PT A","24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000})
+
+	tests := map[string]struct {
+        input  		int
+        output 		bool
+        err    		error
+    }{
+        "successful delete": {
+			input:	2,
+			output: true,
+           	err:	nil,
+		},
+	}
+	
+	for testName, test := range tests {
+		t.Logf("Running test case %s", testName)
+		t.Run(testName, func(t *testing.T){
+			output, err := srv.DeleteInvoice(ctx, test.input)
+			assert.IsType(t, test.err, err)
+			assert.EqualValues(t, test.output, output)
+			//check get returns updated
+			after, errAfter := srv.GetInvoice(ctx, test.input)
+			assert.IsType(t, ApiError, errAfter)
+			assert.EqualValues(t, Invoice_db{}, after)
 		})
 	}
 }
@@ -115,10 +144,10 @@ func TestGetAllInvoice(t *testing.T) {
         output map[int]Invoice_db
         err    error
     }{
-        "successful get": {
+        "successful get all": {
 			output:	map[int]Invoice_db{
-				1: Invoice_db{Invoice{"PT B","24/03/2020",[]Item{Item{"Batu",10000,3,30000}},5000},1,time.Now().Format("02/01/2006")},
-				2: Invoice_db{Invoice{"PT A","24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000},1,time.Now().Format("02/01/2006")},
+				1: Invoice_db{Invoice{"PT B","24/03/2020",[]Item{Item{"Batu",10000,3,30000}},6000},1,time.Now().Format("02/01/2006")},
+				2: Invoice_db{Invoice{"PT A","24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000},2,time.Now().Format("02/01/2006")},
 			},
            	err:    nil,
 		},

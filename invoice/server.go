@@ -28,6 +28,12 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints) http.Handler {
         endpoints.PutInvoiceEndpoint,
         decodePutInvoiceRequest,
         encodeResponse,
+	))
+	
+	r.Methods("DELETE").Path("/invoice").Handler(httptransport.NewServer(
+        endpoints.DeleteInvoiceEndpoint,
+        decodeDeleteInvoiceRequest,
+        encodeResponse,
     ))
 
 	r.Methods("GET").Path("/allInvoice").Handler(httptransport.NewServer(

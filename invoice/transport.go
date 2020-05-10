@@ -31,6 +31,14 @@ type putInvoiceResponse struct {
     Invoice		Invoice_db
 }
 
+type deleteInvoiceRequest struct{
+	ID			int
+}
+
+type deleteInvoiceResponse struct {
+    success		bool
+}
+
 type getAllInvoiceRequest struct{}
 
 type getAllInvoiceResponse struct {
@@ -58,6 +66,15 @@ func decodeGetInvoiceRequest(ctx context.Context, r *http.Request) (interface{},
 
 func decodePutInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
     var req putInvoiceRequest
+    err := json.NewDecoder(r.Body).Decode(&req)
+    if err != nil {
+        return nil, err
+    }
+    return req, nil
+}
+
+func decodeDeleteInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+    var req deleteInvoiceRequest
     err := json.NewDecoder(r.Body).Decode(&req)
     if err != nil {
         return nil, err

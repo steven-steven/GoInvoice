@@ -40,6 +40,7 @@ func main() {
 		PostInvoiceEndpoint:	invoice.MakePostInvoiceEndpoint(srv),
 		GetInvoiceEndpoint:   	invoice.MakeGetInvoiceEndpoint(srv),
 		PutInvoiceEndpoint: 	invoice.MakePutInvoiceEndpoint(srv),
+		DeleteInvoiceEndpoint: 	invoice.MakeDeleteInvoiceEndpoint(srv),
 		GetAllInvoiceEndpoint: 	invoice.MakeGetAllInvoiceEndpoint(srv),
 	}
 
