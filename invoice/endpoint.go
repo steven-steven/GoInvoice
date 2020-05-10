@@ -40,7 +40,7 @@ func MakeGetInvoiceEndpoint(srv Service) endpoint.Endpoint {
 func MakePutInvoiceEndpoint(srv Service) endpoint.Endpoint {
     return func(ctx context.Context, request interface{}) (interface{}, error) {
         req := request.(putInvoiceRequest)
-        res, err := srv.PutInvoice(ctx, req.Invoice)
+        res, err := srv.PutInvoice(ctx, req.ID, req.Invoice)
         if err != nil {
             return putInvoiceResponse{}, err
         }

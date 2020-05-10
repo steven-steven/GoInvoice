@@ -23,6 +23,7 @@ type getInvoiceResponse struct {
 }
 
 type putInvoiceRequest struct{
+	ID			int
 	Invoice
 }
 

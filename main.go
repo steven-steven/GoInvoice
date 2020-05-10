@@ -9,7 +9,7 @@ import (
     "os"
     "os/signal"
     "syscall"
-
+    "github.com/steven-steven/GoInvoice/config"
     "github.com/steven-steven/GoInvoice/invoice"
 )
 
@@ -19,10 +19,15 @@ func main() {
     )
     flag.Parse()
 	ctx := context.Background()
+	errChan := make(chan error)
+
+	dbClient, err := config.GetRealDB(ctx)
+	if err != nil {
+		errChan <- fmt.Errorf("%s", err)
+	}
 	
 	// INVOICE SERVICE
-    srv := invoice.NewService()
-    errChan := make(chan error)
+    srv := invoice.NewService(*dbClient)
 
     go func() {	// cntrl-C
         c := make(chan os.Signal, 1)

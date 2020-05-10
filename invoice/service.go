@@ -7,13 +7,13 @@ import (
 	"fmt"
 	"strconv"
 	"time"
-	"github.com/steven-steven/GoInvoice/config"
+	"github.com/jeremyschlatter/firebase/db"
 )
 
 type Service interface {
     PostInvoice(ctx context.Context, inv Invoice) (Invoice_db, error)
 	GetInvoice(ctx context.Context, id int) (Invoice_db, error)
-	PutInvoice(ctx context.Context, inv Invoice) (Invoice_db, error)
+	PutInvoice(ctx context.Context, id int, inv Invoice) (Invoice_db, error)
 	GetAllInvoice(ctx context.Context) (map[int]Invoice_db, error)
 }
 
@@ -38,10 +38,12 @@ type Item struct {
 	Amount		uint32	`json:"amount"`
 }
 
-type invoiceService struct{}
+type invoiceService struct{
+	dbClient	db.Client
+}
 
-func NewService() Service {
-    return invoiceService{}
+func NewService(dbClient db.Client) Service {
+    return invoiceService{dbClient}
 }
 
 // --- Services ---
@@ -49,11 +51,8 @@ var (
 	ApiError = errors.New("API Error")
 )
 
-func (invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice_db, error) {
-	dbClient, err := config.GetDBInstance(ctx)
-	if err != nil {
-		return Invoice_db{}, ApiError
-	}
+func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice_db, error) {
+	dbClient := srv.dbClient
 	
 	//get invoice id
 	idRef := dbClient.NewRef("invoice/lastId")
@@ -66,21 +65,7 @@ func (invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice_db,
 		log.Fatal(err)
 		return Invoice_db{}, ApiError
 	}
-	fmt.Printf("id %v",id)
 
-	// inv = Invoice{
-	// 	Client: "PT A",
-	// 	Date: "24/03/2019",
-	// 	Items: []Item{
-	// 		Item{
-	// 			Name: "Paku",
-	// 			Rate: 10000,
-	// 			Quantity: 3,
-	// 			Amount: 30000,
-	// 		},
-	// 	},
-	// 	Tax: 5000,
-	// }
 	now := time.Now()
 	acc := Invoice_db{
 		Invoice: inv,
@@ -92,7 +77,6 @@ func (invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice_db,
 		log.Fatal(err)
 		return Invoice_db{}, ApiError
 	}
-	fmt.Println("HI")
 
 	return acc, nil
 }
@@ -104,7 +88,7 @@ func (invoiceService) GetInvoice(ctx context.Context, id int) (Invoice_db, error
 }
 
 // Validate will check if the date today's date
-func (invoiceService) PutInvoice(ctx context.Context, inv Invoice) (Invoice_db, error) {
+func (invoiceService) PutInvoice(ctx context.Context, id int, inv Invoice) (Invoice_db, error) {
     
     return Invoice_db{}, nil
 }

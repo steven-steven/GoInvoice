@@ -1,0 +1,140 @@
+package invoice
+
+import (
+    "context"
+    "testing"
+	"time"
+	// "fmt"
+	// "reflect"
+	"github.com/stretchr/testify/assert"
+    "github.com/steven-steven/GoInvoice/config"
+)
+
+// type Service interface {
+//     PostInvoice(ctx context.Context, inv Invoice) (Invoice_db, error)
+// 	GetInvoice(ctx context.Context, id int) (Invoice_db, error)
+// 	PutInvoice(ctx context.Context, id int, inv Invoice) (Invoice_db, error)
+// 	GetAllInvoice(ctx context.Context) (map[int]Invoice_db, error)
+// }
+
+func TestPostInvoice(t *testing.T) {
+	srv, ctx := setup()	//new test DB
+	
+	tests := map[string]struct {
+        input  Invoice
+        output Invoice_db
+        err    error
+    }{
+        "successful post": {
+            input:  Invoice{"PT A","24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000},
+            output:	Invoice_db{Invoice{"PT A","24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000},1,time.Now().Format("02/01/2006")},
+           	err:    nil,
+		},
+	}
+	
+	for testName, test := range tests {
+		t.Logf("Running test case %s", testName)
+		t.Run(testName, func(t *testing.T){
+			output, err := srv.PostInvoice(ctx, test.input)
+			assert.IsType(t, test.err, err)
+        	assert.EqualValues(t, test.output, output)
+		})
+	}
+}
+
+func TestGetInvoice(t *testing.T) {
+	srv, ctx := setup()	//new test DB
+	
+	//initial data
+	srv.PostInvoice(ctx, Invoice{"PT C","24/03/2018",[]Item{Item{"Paku",10000,3,30000}},5000})
+	srv.PostInvoice(ctx, Invoice{"PT B","24/03/2020",[]Item{Item{"Batu",10000,3,30000}},6000})
+	srv.PostInvoice(ctx, Invoice{"PT A","24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000})
+
+	tests := map[string]struct {
+        input  int
+        output Invoice_db
+        err    error
+    }{
+        "successful get": {
+            input:  2,
+            output:	Invoice_db{Invoice{"PT B","24/03/2020",[]Item{Item{"Paku",10000,3,30000}},5000},1,time.Now().Format("02/01/2006")},
+           	err:    nil,
+		},
+	}
+	
+	for testName, test := range tests {
+		t.Logf("Running test case %s", testName)
+		t.Run(testName, func(t *testing.T){
+			output, err := srv.GetInvoice(ctx, test.input)
+			assert.IsType(t, test.err, err)
+        	assert.EqualValues(t, test.output, output)
+		})
+	}
+}
+
+func TestPutInvoice(t *testing.T) {
+	srv, ctx := setup()	//new test DB
+	
+	//initial data
+	srv.PostInvoice(ctx, Invoice{"PT B","24/03/2020",[]Item{Item{"Batu",10000,3,30000}},6000})
+	srv.PostInvoice(ctx, Invoice{"PT A","24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000})
+
+	tests := map[string]struct {
+		input_id	int
+        input  		Invoice
+        output 		Invoice_db
+        err    		error
+    }{
+        "successful put": {
+			input_id:	2,
+            input:  	Invoice{"PT C","24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000},
+            output:		Invoice_db{Invoice{"PT C","24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000},1,time.Now().Format("02/01/2006")},
+           	err:    	nil,
+		},
+	}
+	
+	for testName, test := range tests {
+		t.Logf("Running test case %s", testName)
+		t.Run(testName, func(t *testing.T){
+			output, err := srv.PutInvoice(ctx, test.input_id, test.input)
+			assert.IsType(t, test.err, err)
+			assert.EqualValues(t, test.output, output)
+			//check get returns updated
+		})
+	}
+}
+
+func TestGetAllInvoice(t *testing.T) {
+	srv, ctx := setup()	//new test DB
+	
+	//initial data
+	srv.PostInvoice(ctx, Invoice{"PT B","24/03/2020",[]Item{Item{"Batu",10000,3,30000}},6000})
+	srv.PostInvoice(ctx, Invoice{"PT A","24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000})
+
+	tests := map[string]struct {
+        output map[int]Invoice_db
+        err    error
+    }{
+        "successful get": {
+			output:	map[int]Invoice_db{
+				1: Invoice_db{Invoice{"PT B","24/03/2020",[]Item{Item{"Batu",10000,3,30000}},5000},1,time.Now().Format("02/01/2006")},
+				2: Invoice_db{Invoice{"PT A","24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000},1,time.Now().Format("02/01/2006")},
+			},
+           	err:    nil,
+		},
+	}
+	
+	for testName, test := range tests {
+		t.Logf("Running test case %s", testName)
+		t.Run(testName, func(t *testing.T){
+			output, err := srv.GetAllInvoice(ctx)
+			assert.IsType(t, test.err, err)
+        	assert.EqualValues(t, test.output, output)
+		})
+	}
+}
+
+func setup() (srv Service, ctx context.Context) {
+	dbClient := config.GetTestDB(ctx)
+    return NewService(dbClient), context.Background()
+}
