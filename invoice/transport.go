@@ -36,7 +36,7 @@ type deleteInvoiceRequest struct{
 }
 
 type deleteInvoiceResponse struct {
-    success		bool
+    Success		bool
 }
 
 type getAllInvoiceRequest struct{}

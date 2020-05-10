@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"sync"
 	"strconv"
 	"time"
 	"github.com/jeremyschlatter/firebase/db"
@@ -49,12 +50,14 @@ func NewService(dbClient db.Client) Service {
 // --- Services ---
 var (
 	ApiError = errors.New("API Error")
+	mux_incrementId sync.Mutex
 )
 
 func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice_db, error) {
 	dbClient := srv.dbClient
 	
 	//get invoice id
+	mux_incrementId.Lock()
 	idRef := dbClient.NewRef("invoice/lastId")
 	var id int
 	if err := idRef.Get(ctx, &id); err != nil {
@@ -65,6 +68,7 @@ func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice
 		log.Fatal(err)
 		return Invoice_db{}, ApiError
 	}
+	mux_incrementId.Unlock()
 
 	now := time.Now()
 	acc := Invoice_db{
