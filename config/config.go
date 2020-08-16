@@ -19,18 +19,23 @@ type config struct {
 }
 
 func getEnv() (*config, error) {
+	C := config{}
+
 	v := viper.New()
 	v.SetConfigFile("config/config.json")
 	err := v.ReadInConfig()
 	if err != nil {
-		log.Fatalf("Error while reading config file %s", err)
-		return nil, err
-	}
-	C := config{}
-	err = v.Unmarshal(&C)
-	if err != nil {
-		log.Fatalf("Invalid type assertion %s", err)
-		return nil, err
+		// production
+		viper.BindEnv("firebase")
+		secret := viper.GetStringMapString("firebase")
+		C.Firebase = secret
+	} else {
+		// development
+		err = v.Unmarshal(&C)
+		if err != nil {
+			log.Fatalf("Invalid type assertion %s", err)
+			return nil, err
+		}
 	}
 	return &C, nil
 }

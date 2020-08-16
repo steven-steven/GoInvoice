@@ -2,7 +2,7 @@ package main
 
 import (
     "context"
-    "flag"
+    "github.com/spf13/viper"
     "fmt"
     "log"
     "net/http"
@@ -14,10 +14,13 @@ import (
 )
 
 func main() {
-    var (
-        httpAddr = flag.String("http", ":8080", "http listen address")
-    )
-    flag.Parse()
+    viper.BindEnv("port")
+    var httpAddr = viper.GetString("port")
+    log.Println(httpAddr)
+    if httpAddr == "" {
+        httpAddr = "8080"
+    }
+    
 	ctx := context.Background()
 	errChan := make(chan error)
 
@@ -46,9 +49,9 @@ func main() {
 
     // HTTP transport
     go func() {
-        log.Println("app listening on port:", *httpAddr)
+        log.Println("app listening on port:", httpAddr)
         handler := invoice.NewHTTPServer(ctx, endpoints)
-        errChan <- http.ListenAndServe(*httpAddr, handler)
+        errChan <- http.ListenAndServe(":" + httpAddr, handler)
     }()
 
     log.Fatalln(<-errChan)
