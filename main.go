@@ -16,7 +16,6 @@ import (
 func main() {
     viper.BindEnv("port")
     var httpAddr = viper.GetString("port")
-    log.Println(httpAddr)
     if httpAddr == "" {
         httpAddr = "8080"
     }

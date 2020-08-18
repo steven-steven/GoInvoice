@@ -23,20 +23,30 @@ type Invoice_db struct {
 	Invoice
 	ID			int		`json:"id"`
 	CreatedAt	string	`json:"createdAt"`
+	Total		uint64	`json:"total,omitempty"`
 }
 
 type Invoice struct {
 	Client		string	`json:"client"`
+	ClientAddress *ClientAddress `json:"client_address,omitempty"`
 	Date      	string  `json:"date"`
 	Items 		[]Item 	`json:"items"`
-	Tax			uint32	`json:"tax,omitempty"`
+	Tax			uint64	`json:"tax,omitempty"`
+}
+
+type ClientAddress struct {
+	Address		string	`json:"address,omitempty"`
+	City		string	`json:"city,omitempty"`
+	State      	string  `json:"state,omitempty"`
+	Country 	string 	`json:"country,omitempty"`
+	PostalCode	string	`json:"postal_code,omitempty"`
 }
 
 type Item struct {
 	Name     	string	`json:"name"`
-	Rate      	uint32	`json:"rate"`
+	Rate      	uint64	`json:"rate"`
 	Quantity 	int		`json:"quantity"`
-	Amount		uint32	`json:"amount"`
+	Amount		uint64	`json:"amount"`
 }
 
 type invoiceService struct{
@@ -71,10 +81,22 @@ func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice
 	mux_incrementId.Unlock()
 
 	now := time.Now()
+
+	// Calculate total: sum all items + tax
+	var total uint64
+	for i, item := range inv.Items {
+		// replace amount value
+		calculatedQuantity := (uint64(item.Quantity) * item.Rate)
+		inv.Items[i].Amount = calculatedQuantity
+		total += calculatedQuantity
+	}
+	total += inv.Tax
+
 	acc := Invoice_db{
 		Invoice: inv,
 		ID: id,
 		CreatedAt: now.Format("02/01/2006"),
+		Total: total,
 	}
 
 	if err := dbClient.NewRef("invoice/documents/"+strconv.Itoa(id)).Set(ctx, acc); err != nil {
@@ -102,10 +124,22 @@ func (srv invoiceService) PutInvoice(ctx context.Context, id int, inv Invoice) (
 
 	//new data
 	now := time.Now()
+
+	// Calculate total: sum all items + tax
+	var total uint64
+	for i, item := range inv.Items {
+		// replace amount value
+		calculatedQuantity := (uint64(item.Quantity) * item.Rate)
+		inv.Items[i].Amount = calculatedQuantity
+		total += calculatedQuantity
+	}
+	total += inv.Tax
+
 	newRecord := Invoice_db{
 		Invoice: inv,
 		ID: id,
 		CreatedAt: now.Format("02/01/2006"),
+		Total: total,
 	}
 
 	if err := dbClient.NewRef("invoice/documents/"+strconv.Itoa(id)).Set(ctx, newRecord); err != nil {

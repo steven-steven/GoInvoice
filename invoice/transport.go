@@ -4,6 +4,8 @@ import (
     "context"
     "encoding/json"
     "net/http"
+    "github.com/gorilla/mux"
+    "strconv"
 )
 
 type postInvoiceRequest struct{
@@ -75,10 +77,12 @@ func decodePutInvoiceRequest(ctx context.Context, r *http.Request) (interface{},
 
 func decodeDeleteInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
     var req deleteInvoiceRequest
-    err := json.NewDecoder(r.Body).Decode(&req)
+    vars := mux.Vars(r)
+    idParam, err := strconv.Atoi(vars["id"])
     if err != nil {
         return nil, err
     }
+    req.ID = idParam
     return req, nil
 }
 
