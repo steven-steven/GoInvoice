@@ -59,10 +59,12 @@ func decodePostInvoiceRequest(ctx context.Context, r *http.Request) (interface{}
 
 func decodeGetInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
     var req getInvoiceRequest
-    err := json.NewDecoder(r.Body).Decode(&req)
+    vars := mux.Vars(r)
+    idParam, err := strconv.Atoi(vars["id"])
     if err != nil {
         return nil, err
     }
+    req.ID = idParam
     return req, nil
 }
 
@@ -88,10 +90,6 @@ func decodeDeleteInvoiceRequest(ctx context.Context, r *http.Request) (interface
 
 func decodeGetAllInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
     var req getAllInvoiceRequest
-    err := json.NewDecoder(r.Body).Decode(&req)
-    if err != nil {
-        return nil, err
-    }
     return req, nil
 }
 
