@@ -70,7 +70,13 @@ func decodeGetInvoiceRequest(ctx context.Context, r *http.Request) (interface{},
 
 func decodePutInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
     var req putInvoiceRequest
-    err := json.NewDecoder(r.Body).Decode(&req)
+    vars := mux.Vars(r)
+    idParam, err := strconv.Atoi(vars["id"])
+    if err != nil {
+        return nil, err
+    }
+    err = json.NewDecoder(r.Body).Decode(&req)
+    req.ID = idParam
     if err != nil {
         return nil, err
     }

@@ -24,7 +24,7 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints) http.Handler {
         encodeResponse,
     ))
 
-    r.Methods("PUT").Path("/invoice").Handler(httptransport.NewServer(
+    r.Methods("PUT").Path("/invoice/{id:[0-9]+}").Handler(httptransport.NewServer(
         endpoints.PutInvoiceEndpoint,
         decodePutInvoiceRequest,
         encodeResponse,
