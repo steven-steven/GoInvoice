@@ -164,9 +164,18 @@ func (srv invoiceService) GetAllInvoice(ctx context.Context) (map[int]Invoice_db
 	dbClient := srv.dbClient
 
 	var result map[int]Invoice_db
+	// https://github.com/golang/go/issues/37711 (nill instead of []. For now need to manually go over and explicitly make [])
 	if err := dbClient.NewRef("invoice/documents/").Get(ctx, &result); err != nil {
 		log.Println(err)
 		return map[int]Invoice_db{}, ApiError
+	}
+	for k, inv := range result {
+        if(inv.Items == nil){
+			//https://github.com/golang/go/issues/3117
+			var tmp = result[k]
+			tmp.Items = make([]Item, 0)
+			result[k] = tmp
+		}
 	}
 
     return result, nil
