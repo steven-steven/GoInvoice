@@ -23,7 +23,7 @@ type Invoice_db struct {
 	Invoice
 	ID			int		`json:"id"`
 	CreatedAt	string	`json:"createdAt"`
-	Total		uint64	`json:"total,omitempty"`
+	Total		*uint64	`json:"total,omitempty"`
 }
 
 type Invoice struct {
@@ -31,7 +31,7 @@ type Invoice struct {
 	ClientAddress *ClientAddress `json:"client_address,omitempty"`
 	Date      	string  `json:"date"`
 	Items 		[]Item 	`json:"items"`
-	Tax			uint64	`json:"tax,omitempty"`
+	Tax			*uint64	`json:"tax,omitempty"`
 }
 
 type ClientAddress struct {
@@ -44,9 +44,9 @@ type ClientAddress struct {
 
 type Item struct {
 	Name     	string	`json:"name"`
-	Rate      	uint64	`json:"rate"`
+	Rate      	*uint64	`json:"rate"`
 	Quantity 	int		`json:"quantity"`
-	Amount		uint64	`json:"amount"`
+	Amount		*uint64	`json:"amount"`
 }
 
 type invoiceService struct{
@@ -86,17 +86,17 @@ func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice
 	var total uint64
 	for i, item := range inv.Items {
 		// replace amount value
-		calculatedQuantity := (uint64(item.Quantity) * item.Rate)
-		inv.Items[i].Amount = calculatedQuantity
+		calculatedQuantity := (uint64(item.Quantity) * (*item.Rate))
+		inv.Items[i].Amount = &calculatedQuantity
 		total += calculatedQuantity
 	}
-	total += inv.Tax
+	total += (*inv.Tax)
 
 	acc := Invoice_db{
 		Invoice: inv,
 		ID: id,
 		CreatedAt: now.Format("02/01/2006"),
-		Total: total,
+		Total: &total,
 	}
 
 	if err := dbClient.NewRef("invoice/documents/"+strconv.Itoa(id)).Set(ctx, acc); err != nil {
@@ -116,6 +116,9 @@ func (srv invoiceService) GetInvoice(ctx context.Context, id int) (Invoice_db, e
 		log.Println(err)
 		return Invoice_db{}, ApiError
 	}
+	if(res.Items == nil){
+		res.Items = make([]Item, 0)
+	}
     return res, nil
 }
 
@@ -129,17 +132,17 @@ func (srv invoiceService) PutInvoice(ctx context.Context, id int, inv Invoice) (
 	var total uint64
 	for i, item := range inv.Items {
 		// replace amount value
-		calculatedQuantity := (uint64(item.Quantity) * item.Rate)
-		inv.Items[i].Amount = calculatedQuantity
+		calculatedQuantity := (uint64(item.Quantity) * (*item.Rate))
+		inv.Items[i].Amount = &calculatedQuantity
 		total += calculatedQuantity
 	}
-	total += inv.Tax
+	total += (*inv.Tax)
 
 	newRecord := Invoice_db{
 		Invoice: inv,
 		ID: id,
 		CreatedAt: now.Format("02/01/2006"),
-		Total: total,
+		Total: &total,
 	}
 
 	if err := dbClient.NewRef("invoice/documents/"+strconv.Itoa(id)).Set(ctx, newRecord); err != nil {
