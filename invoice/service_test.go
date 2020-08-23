@@ -2,13 +2,28 @@ package invoice
 
 import (
     "context"
-    "testing"
+	"testing"
 	"time"
 	// "fmt"
 	// "reflect"
 	"github.com/stretchr/testify/assert"
     "github.com/steven-steven/GoInvoice/config"
 )
+
+var itemRate1 = uint64(10000)
+var itemQuantity1 = 3
+var itemAmount1 = itemRate1*uint64(itemQuantity1)
+var itemRate2 = uint64(5000)
+var itemQuantity2 = 2
+var itemAmount2 = itemRate2*uint64(itemQuantity2)
+var itemTax1 = uint64(5000)
+var itemTax2 = uint64(6000)
+var total_1_2_tax1 = itemAmount1 + itemAmount2 + itemTax1
+var total_1_2_tax2 = itemAmount1 + itemAmount2 + itemTax2
+var total_1_tax1 = itemAmount1 + itemTax1
+var total_2_tax2 = itemAmount2 + itemTax2
+var total_1_tax2 = itemAmount1 + itemTax2
+var total_2_tax1 = itemAmount2 + itemTax1
 
 func TestPostInvoice(t *testing.T) {
 	srv, ctx := setup()	//new test DB
@@ -19,8 +34,8 @@ func TestPostInvoice(t *testing.T) {
         err    error
     }{
         "successful post": {
-			input:  Invoice{"PT A",&ClientAddress{"690 King St","Cilegon","Banten","Indonesia","154321"},"24/03/2019",[]Item{Item{"Paku",10000,3,30000},Item{"Dua",5000,2,100}},5000},
-            output:	Invoice_db{Invoice{"PT A",&ClientAddress{"690 King St","Cilegon","Banten","Indonesia","154321"},"24/03/2019",[]Item{Item{"Paku",10000,3,30000},Item{"Dua",5000,2,10000}},5000},1,time.Now().Format("02/01/2006"),45000},
+			input:  Invoice{"PT A",&ClientAddress{"690 King St","Cilegon","Banten","Indonesia","154321"},"24/03/2019",[]Item{Item{"Paku",&itemRate1,itemQuantity1,&itemAmount1},Item{"Dua",&itemRate2,itemQuantity2,&itemAmount2}},&itemTax1},
+            output:	Invoice_db{Invoice{"PT A",&ClientAddress{"690 King St","Cilegon","Banten","Indonesia","154321"},"24/03/2019",[]Item{Item{"Paku",&itemRate1,itemQuantity1,&itemAmount1},Item{"Dua",&itemRate2,itemQuantity2,&itemAmount2}},&itemTax1},"1903-00001",time.Now().Format("02/01/2006"),&total_1_2_tax1},
            	err:    nil,
 		},
 	}
@@ -39,18 +54,18 @@ func TestGetInvoice(t *testing.T) {
 	srv, ctx := setup()	//new test DB
 	
 	//initial data
-	srv.PostInvoice(ctx, Invoice{"PT C",nil,"24/03/2018",[]Item{Item{"Paku",10000,3,30000}},5000})
-	srv.PostInvoice(ctx, Invoice{"PT B",nil,"24/03/2020",[]Item{Item{"Batu",10000,3,30000}},6000})
-	srv.PostInvoice(ctx, Invoice{"PT A",nil,"24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000})
+	srv.PostInvoice(ctx, Invoice{"PT C",nil,"24/03/2018",[]Item{Item{"Paku",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax1})
+	srv.PostInvoice(ctx, Invoice{"PT B",nil,"24/03/2020",[]Item{Item{"Batu",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax2})
+	srv.PostInvoice(ctx, Invoice{"PT A",nil,"24/03/2019",[]Item{Item{"Paku",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax1})
 
 	tests := map[string]struct {
-        input  int
+        input  string
         output Invoice_db
         err    error
     }{
         "successful get": {
-            input:  2,
-            output:	Invoice_db{Invoice{"PT B",nil,"24/03/2020",[]Item{Item{"Batu",10000,3,30000}},6000},2,time.Now().Format("02/01/2006"),36000},
+            input:  "2003-00001",
+            output:	Invoice_db{Invoice{"PT B",nil,"24/03/2020",[]Item{Item{"Batu",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax2},"2003-00001",time.Now().Format("02/01/2006"),&total_1_tax2},
            	err:    nil,
 		},
 	}
@@ -69,19 +84,19 @@ func TestPutInvoice(t *testing.T) {
 	srv, ctx := setup()	//new test DB
 	
 	//initial data
-	srv.PostInvoice(ctx, Invoice{"PT B",nil,"24/03/2020",[]Item{Item{"Batu",10000,3,30000}},6000})
-	srv.PostInvoice(ctx, Invoice{"PT A",&ClientAddress{"690 King St","Cilegon","Banten","Indonesia","154321"},"24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000})
+	srv.PostInvoice(ctx, Invoice{"PT B",nil,"24/03/2020",[]Item{Item{"Batu",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax2})
+	srv.PostInvoice(ctx, Invoice{"PT A",&ClientAddress{"690 King St","Cilegon","Banten","Indonesia","154321"},"24/03/2019",[]Item{Item{"Paku",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax1})
 
 	tests := map[string]struct {
-		input_id	int
+		input_id	string
         input  		Invoice
         output 		Invoice_db
         err    		error
     }{
         "successful put": {
-			input_id:	2,
-            input:  	Invoice{"PT C",&ClientAddress{Address:"St",PostalCode:""},"24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000},
-            output:		Invoice_db{Invoice{"PT C",&ClientAddress{Address:"St",PostalCode:""},"24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000},2,time.Now().Format("02/01/2006"),35000},
+			input_id:	"1903-00001",
+            input:  	Invoice{"PT C",&ClientAddress{Address:"St",PostalCode:""},"24/03/2019",[]Item{Item{"Paku",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax1},
+            output:		Invoice_db{Invoice{"PT C",&ClientAddress{Address:"St",PostalCode:""},"24/03/2019",[]Item{Item{"Paku",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax1},"1903-00001",time.Now().Format("02/01/2006"),&total_1_tax1},
            	err:    	nil,
 		},
 	}
@@ -104,16 +119,16 @@ func TestDeleteInvoice(t *testing.T) {
 	srv, ctx := setup()	//new test DB
 	
 	//initial data
-	srv.PostInvoice(ctx, Invoice{"PT B",nil,"24/03/2020",[]Item{Item{"Batu",10000,3,30000}},6000})
-	srv.PostInvoice(ctx, Invoice{"PT A",nil,"24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000})
+	srv.PostInvoice(ctx, Invoice{"PT B",nil,"24/03/2020",[]Item{Item{"Batu",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax2})
+	srv.PostInvoice(ctx, Invoice{"PT A",nil,"24/03/2019",[]Item{Item{"Paku",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax1})
 
 	tests := map[string]struct {
-        input  		int
+        input  		string
         output 		bool
         err    		error
     }{
         "successful delete": {
-			input:	2,
+			input:	"1903-00001",
 			output: true,
            	err:	nil,
 		},
@@ -137,17 +152,17 @@ func TestGetAllInvoice(t *testing.T) {
 	srv, ctx := setup()	//new test DB
 	
 	//initial data
-	srv.PostInvoice(ctx, Invoice{"PT B",nil,"24/03/2020",[]Item{Item{"Batu",10000,3,30000}},6000})
-	srv.PostInvoice(ctx, Invoice{"PT A",nil,"24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000})
+	srv.PostInvoice(ctx, Invoice{"PT B",nil,"24/03/2020",[]Item{Item{"Batu",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax2})
+	srv.PostInvoice(ctx, Invoice{"PT A",nil,"24/03/2019",[]Item{Item{"Paku",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax1})
 
 	tests := map[string]struct {
-        output map[int]Invoice_db
+        output map[string]Invoice_db
         err    error
     }{
         "successful get all": {
-			output:	map[int]Invoice_db{
-				1: Invoice_db{Invoice{"PT B",nil,"24/03/2020",[]Item{Item{"Batu",10000,3,30000}},6000},1,time.Now().Format("02/01/2006"),36000},
-				2: Invoice_db{Invoice{"PT A",nil,"24/03/2019",[]Item{Item{"Paku",10000,3,30000}},5000},2,time.Now().Format("02/01/2006"),35000},
+			output:	map[string]Invoice_db{
+				"2003-00001": Invoice_db{Invoice{"PT B",nil,"24/03/2020",[]Item{Item{"Batu",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax2},"2003-00001",time.Now().Format("02/01/2006"),&total_1_tax2},
+				"1903-00001": Invoice_db{Invoice{"PT A",nil,"24/03/2019",[]Item{Item{"Paku",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax1},"1903-00001",time.Now().Format("02/01/2006"),&total_1_tax1},
 			},
            	err:    nil,
 		},

@@ -11,7 +11,16 @@ import (
     "syscall"
     "github.com/steven-steven/GoInvoice/config"
     "github.com/steven-steven/GoInvoice/invoice"
+    "github.com/steven-steven/GoInvoice/item"
 )
+
+type invoiceEndpoint = invoice.Endpoints
+type itemEndpoint = item.Endpoints
+
+type combinedEndpoint struct {
+    *invoiceEndpoint
+    *itemEndpoint
+}
 
 func main() {
     viper.BindEnv("port")
@@ -30,6 +39,8 @@ func main() {
 	
 	// INVOICE SERVICE
     srv := invoice.NewService(*dbClient)
+    // ITEM SERVICE
+    srvItem := item.NewService(*dbClient)
 
     go func() {	// cntrl-C
         c := make(chan os.Signal, 1)
@@ -38,18 +49,25 @@ func main() {
     }()
 
     // mapping endpoints
-    endpoints := invoice.Endpoints{
-		PostInvoiceEndpoint:	invoice.MakePostInvoiceEndpoint(srv),
-		GetInvoiceEndpoint:   	invoice.MakeGetInvoiceEndpoint(srv),
-		PutInvoiceEndpoint: 	invoice.MakePutInvoiceEndpoint(srv),
-		DeleteInvoiceEndpoint: 	invoice.MakeDeleteInvoiceEndpoint(srv),
-		GetAllInvoiceEndpoint: 	invoice.MakeGetAllInvoiceEndpoint(srv),
+    endpoints := combinedEndpoint{
+        &invoice.Endpoints{
+            PostInvoiceEndpoint:	invoice.MakePostInvoiceEndpoint(srv),
+            GetInvoiceEndpoint:   	invoice.MakeGetInvoiceEndpoint(srv),
+            PutInvoiceEndpoint: 	invoice.MakePutInvoiceEndpoint(srv),
+            DeleteInvoiceEndpoint: 	invoice.MakeDeleteInvoiceEndpoint(srv),
+            GetAllInvoiceEndpoint: 	invoice.MakeGetAllInvoiceEndpoint(srv),
+        },
+        &item.Endpoints{
+            PostItemEndpoint:	    item.MakePostItemEndpoint(srvItem),
+            DeleteItemEndpoint: 	item.MakeDeleteItemEndpoint(srvItem),
+            GetAllItemEndpoint: 	item.MakeGetAllItemEndpoint(srvItem),
+        },
 	}
 
     // HTTP transport
     go func() {
         log.Println("app listening on port:", httpAddr)
-        handler := invoice.NewHTTPServer(ctx, endpoints)
+        handler := newHTTPServer(ctx, endpoints)
         errChan <- http.ListenAndServe(":" + httpAddr, handler)
     }()
 

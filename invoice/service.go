@@ -2,26 +2,26 @@ package invoice
 
 import (
 	"context"
+	"fmt"
 	"errors"
 	"log"
 	"sync"
-	"strconv"
 	"time"
 	"github.com/jeremyschlatter/firebase/db"
 )
 
 type Service interface {
     PostInvoice(ctx context.Context, inv Invoice) (Invoice_db, error)
-	GetInvoice(ctx context.Context, id int) (Invoice_db, error)
-	PutInvoice(ctx context.Context, id int, inv Invoice) (Invoice_db, error)
-	DeleteInvoice(ctx context.Context, id int) (bool, error)
-	GetAllInvoice(ctx context.Context) (map[int]Invoice_db, error)
+	GetInvoice(ctx context.Context, id string) (Invoice_db, error)
+	PutInvoice(ctx context.Context, id string, inv Invoice) (Invoice_db, error)
+	DeleteInvoice(ctx context.Context, id string) (bool, error)
+	GetAllInvoice(ctx context.Context) (map[string]Invoice_db, error)
 }
 
 // DB Model for Invoice
 type Invoice_db struct {
 	Invoice
-	ID			int		`json:"id"`
+	ID			string	`json:"id"`
 	CreatedAt	string	`json:"createdAt"`
 	Total		*uint64	`json:"total,omitempty"`
 }
@@ -66,9 +66,12 @@ var (
 func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice_db, error) {
 	dbClient := srv.dbClient
 	
+	t, _ := time.Parse("02/01/2006", inv.Date)
+	dateId := t.Format("0601")
+
 	//get invoice id
 	mux_incrementId.Lock()
-	idRef := dbClient.NewRef("invoice/lastId")
+	idRef := dbClient.NewRef("invoice/lastId/"+dateId)
 	var id int
 	if err := idRef.Get(ctx, &id); err != nil {
 		log.Fatalln("Error reading from database:", err)
@@ -92,14 +95,15 @@ func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice
 	}
 	total += (*inv.Tax)
 
+	invoiceId := dateId+"-"+fmt.Sprintf("%05d", id)
 	acc := Invoice_db{
 		Invoice: inv,
-		ID: id,
+		ID: invoiceId,
 		CreatedAt: now.Format("02/01/2006"),
 		Total: &total,
 	}
 
-	if err := dbClient.NewRef("invoice/documents/"+strconv.Itoa(id)).Set(ctx, acc); err != nil {
+	if err := dbClient.NewRef("invoice/documents/"+invoiceId).Set(ctx, acc); err != nil {
 		log.Println(err)
 		return Invoice_db{}, ApiError
 	}
@@ -107,12 +111,11 @@ func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice
 	return acc, nil
 }
 
-func (srv invoiceService) GetInvoice(ctx context.Context, id int) (Invoice_db, error) {
+func (srv invoiceService) GetInvoice(ctx context.Context, id string) (Invoice_db, error) {
     dbClient := srv.dbClient
 	
 	var res Invoice_db
-
-	if err := dbClient.NewRef("invoice/documents/"+strconv.Itoa(id)).Get(ctx, &res); (err != nil || res.ID == 0) {
+	if err := dbClient.NewRef("invoice/documents/"+id).Get(ctx, &res); (err != nil || res.ID == "") {
 		log.Println(err)
 		return Invoice_db{}, ApiError
 	}
@@ -122,7 +125,7 @@ func (srv invoiceService) GetInvoice(ctx context.Context, id int) (Invoice_db, e
     return res, nil
 }
 
-func (srv invoiceService) PutInvoice(ctx context.Context, id int, inv Invoice) (Invoice_db, error) {
+func (srv invoiceService) PutInvoice(ctx context.Context, id string, inv Invoice) (Invoice_db, error) {
     dbClient := srv.dbClient
 
 	//new data
@@ -145,17 +148,17 @@ func (srv invoiceService) PutInvoice(ctx context.Context, id int, inv Invoice) (
 		Total: &total,
 	}
 
-	if err := dbClient.NewRef("invoice/documents/"+strconv.Itoa(id)).Set(ctx, newRecord); err != nil {
+	if err := dbClient.NewRef("invoice/documents/"+id).Set(ctx, newRecord); err != nil {
 		log.Println(err)
 		return Invoice_db{}, ApiError
 	}
     return newRecord, nil
 }
 
-func (srv invoiceService) DeleteInvoice(ctx context.Context, id int) (bool, error) {
+func (srv invoiceService) DeleteInvoice(ctx context.Context, id string) (bool, error) {
 	dbClient := srv.dbClient
 
-	if err := dbClient.NewRef("invoice/documents/"+strconv.Itoa(id)).Delete(ctx); err != nil {
+	if err := dbClient.NewRef("invoice/documents/"+id).Delete(ctx); err != nil {
 		log.Println(err)
 		return false, ApiError
 	}
@@ -163,14 +166,14 @@ func (srv invoiceService) DeleteInvoice(ctx context.Context, id int) (bool, erro
     return true, nil
 }
 
-func (srv invoiceService) GetAllInvoice(ctx context.Context) (map[int]Invoice_db, error) {
+func (srv invoiceService) GetAllInvoice(ctx context.Context) (map[string]Invoice_db, error) {
 	dbClient := srv.dbClient
 
-	var result map[int]Invoice_db
+	var result map[string]Invoice_db
 	// https://github.com/golang/go/issues/37711 (nill instead of []. For now need to manually go over and explicitly make [])
 	if err := dbClient.NewRef("invoice/documents/").Get(ctx, &result); err != nil {
 		log.Println(err)
-		return map[int]Invoice_db{}, ApiError
+		return map[string]Invoice_db{}, ApiError
 	}
 	for k, inv := range result {
         if(inv.Items == nil){

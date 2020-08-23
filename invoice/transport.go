@@ -5,7 +5,6 @@ import (
     "encoding/json"
     "net/http"
     "github.com/gorilla/mux"
-    "strconv"
 )
 
 type postInvoiceRequest struct{
@@ -17,7 +16,7 @@ type postInvoiceResponse struct {
 }
 
 type getInvoiceRequest struct {
-    ID			int
+    ID			string
 }
 
 type getInvoiceResponse struct {
@@ -25,7 +24,7 @@ type getInvoiceResponse struct {
 }
 
 type putInvoiceRequest struct{
-	ID			int
+	ID			string
 	Invoice
 }
 
@@ -34,7 +33,7 @@ type putInvoiceResponse struct {
 }
 
 type deleteInvoiceRequest struct{
-	ID			int
+	ID			string
 }
 
 type deleteInvoiceResponse struct {
@@ -44,11 +43,11 @@ type deleteInvoiceResponse struct {
 type getAllInvoiceRequest struct{}
 
 type getAllInvoiceResponse struct {
-    Invoices 	map[int]Invoice_db
+    Invoices 	map[string]Invoice_db
 }
 
 // Models to JSON
-func decodePostInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+func DecodePostInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
     var req postInvoiceRequest
     err := json.NewDecoder(r.Body).Decode(&req)
     if err != nil {
@@ -57,25 +56,19 @@ func decodePostInvoiceRequest(ctx context.Context, r *http.Request) (interface{}
     return req, nil
 }
 
-func decodeGetInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+func DecodeGetInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
     var req getInvoiceRequest
     vars := mux.Vars(r)
-    idParam, err := strconv.Atoi(vars["id"])
-    if err != nil {
-        return nil, err
-    }
+    idParam := vars["id"]
     req.ID = idParam
     return req, nil
 }
 
-func decodePutInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+func DecodePutInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
     var req putInvoiceRequest
     vars := mux.Vars(r)
-    idParam, err := strconv.Atoi(vars["id"])
-    if err != nil {
-        return nil, err
-    }
-    err = json.NewDecoder(r.Body).Decode(&req)
+    idParam := vars["id"]
+    err := json.NewDecoder(r.Body).Decode(&req)
     req.ID = idParam
     if err != nil {
         return nil, err
@@ -83,23 +76,20 @@ func decodePutInvoiceRequest(ctx context.Context, r *http.Request) (interface{},
     return req, nil
 }
 
-func decodeDeleteInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+func DecodeDeleteInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
     var req deleteInvoiceRequest
     vars := mux.Vars(r)
-    idParam, err := strconv.Atoi(vars["id"])
-    if err != nil {
-        return nil, err
-    }
+    idParam := vars["id"]
     req.ID = idParam
     return req, nil
 }
 
-func decodeGetAllInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+func DecodeGetAllInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
     var req getAllInvoiceRequest
     return req, nil
 }
 
 // JSON to Models
-func encodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
+func EncodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
     return json.NewEncoder(w).Encode(response)
 }
