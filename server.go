@@ -52,7 +52,7 @@ func newHTTPServer(ctx context.Context, endpoints combinedEndpoint) http.Handler
         item.EncodeResponse,
     ))
 	
-	r.Methods("DELETE").Path("/item/{id:[0-9]{4}-[0-9]{5}}").Handler(httptransport.NewServer(
+	r.Methods("DELETE").Path("/item/{id:item_[0-9]+}").Handler(httptransport.NewServer(
         endpoints.DeleteItemEndpoint,
         item.DecodeDeleteItemRequest,
         item.EncodeResponse,
