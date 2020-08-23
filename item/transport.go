@@ -5,7 +5,6 @@ import (
     "encoding/json"
     "net/http"
     "github.com/gorilla/mux"
-    "strconv"
 )
 
 type postItemRequest struct{
@@ -17,7 +16,7 @@ type postItemResponse struct {
 }
 
 type getItemRequest struct {
-    ID			int
+    ID			string
 }
 
 type getItemResponse struct {
@@ -25,7 +24,7 @@ type getItemResponse struct {
 }
 
 type putItemRequest struct{
-	ID			int
+	ID			string
 	Item
 }
 
@@ -34,7 +33,7 @@ type putItemResponse struct {
 }
 
 type deleteItemRequest struct{
-	ID			int
+	ID			string
 }
 
 type deleteItemResponse struct {
@@ -44,7 +43,7 @@ type deleteItemResponse struct {
 type getAllItemRequest struct{}
 
 type getAllItemResponse struct {
-    Items 	map[int]Item_db
+    Items 	map[string]Item_db
 }
 
 // Models to JSON
@@ -60,10 +59,7 @@ func DecodePostItemRequest(ctx context.Context, r *http.Request) (interface{}, e
 func DecodeDeleteItemRequest(ctx context.Context, r *http.Request) (interface{}, error) {
     var req deleteItemRequest
     vars := mux.Vars(r)
-    idParam, err := strconv.Atoi(vars["id"])
-    if err != nil {
-        return nil, err
-    }
+    idParam := vars["id"]
     req.ID = idParam
     return req, nil
 }

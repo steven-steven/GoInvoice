@@ -22,7 +22,7 @@ func TestPostItem(t *testing.T) {
     }{
         "successful post": {
 			input:  Item{"PT A","defaultDescription",&itemRate1},
-            output:	Item_db{Item{"PT A","defaultDescription",&itemRate1},1,time.Now().Format("02/01/2006")},
+            output:	Item_db{Item{"PT A","defaultDescription",&itemRate1},"item_1",time.Now().Format("02/01/2006")},
            	err:    nil,
 		},
 	}
@@ -45,12 +45,12 @@ func TestDeleteItem(t *testing.T) {
 	srv.PostItem(ctx, Item{"PT A","defaultDescription",&itemRate1})
 
 	tests := map[string]struct {
-        input  		int
+        input  		string
         output 		bool
         err    		error
     }{
         "successful delete": {
-			input:	2,
+			input:	"item_2",
 			output: true,
            	err:	nil,
 		},
@@ -78,13 +78,13 @@ func TestGetAllItem(t *testing.T) {
 	srv.PostItem(ctx, Item{"PT A","defaultDescription",&itemRate1})
 
 	tests := map[string]struct {
-        output map[int]Item_db
+        output map[string]Item_db
         err    error
     }{
         "successful get all": {
-			output:	map[int]Item_db{
-				1: Item_db{Item{"PT B","defaultDescription",&itemRate1},1,time.Now().Format("02/01/2006")},
-				2: Item_db{Item{"PT A","defaultDescription",&itemRate1},2,time.Now().Format("02/01/2006")},
+			output:	map[string]Item_db{
+				"item_1": Item_db{Item{"PT B","defaultDescription",&itemRate1},"item_1",time.Now().Format("02/01/2006")},
+				"item_2": Item_db{Item{"PT A","defaultDescription",&itemRate1},"item_2",time.Now().Format("02/01/2006")},
 			},
            	err:    nil,
 		},

@@ -12,15 +12,15 @@ import (
 
 type Service interface {
 	PostItem(ctx context.Context, inv Item) (Item_db, error)
-	GetItem(ctx context.Context, id int) (Item_db, error)
-	DeleteItem(ctx context.Context, id int) (bool, error)
-	GetAllItem(ctx context.Context) (map[int]Item_db, error)
+	GetItem(ctx context.Context, id string) (Item_db, error)
+	DeleteItem(ctx context.Context, id string) (bool, error)
+	GetAllItem(ctx context.Context) (map[string]Item_db, error)
 }
 
 // DB Model for Item
 type Item_db struct {
 	Item
-	ID			int	`json:"id"`
+	ID			string	`json:"id"`
 	CreatedAt	string	`json:"createdAt"`
 }
 
@@ -63,13 +63,14 @@ func (srv itemService) PostItem(ctx context.Context, item Item) (Item_db, error)
 
 	now := time.Now()
 
+	itemId := "item_"+strconv.Itoa(id)
 	acc := Item_db{
 		Item: item,
-		ID: id,
+		ID: itemId,
 		CreatedAt: now.Format("02/01/2006"),
 	}
 
-	if err := dbClient.NewRef("invoice/items/"+strconv.Itoa(id)).Set(ctx, acc); err != nil {
+	if err := dbClient.NewRef("invoice/items/"+itemId).Set(ctx, acc); err != nil {
 		log.Println(err)
 		return Item_db{}, ApiError
 	}
@@ -77,20 +78,20 @@ func (srv itemService) PostItem(ctx context.Context, item Item) (Item_db, error)
 	return acc, nil
 }
 
-func (srv itemService) GetItem(ctx context.Context, id int) (Item_db, error) {
+func (srv itemService) GetItem(ctx context.Context, id string) (Item_db, error) {
     dbClient := srv.dbClient
 	
 	var res Item_db
-	if err := dbClient.NewRef("invoice/documents/"+strconv.Itoa(id)).Get(ctx, &res); (err != nil || res.ID == 0) {
+	if err := dbClient.NewRef("invoice/documents/"+id).Get(ctx, &res); (err != nil || res.ID == "") {
 		return Item_db{}, ApiError
 	}
     return res, nil
 }
 
-func (srv itemService) DeleteItem(ctx context.Context, id int) (bool, error) {
+func (srv itemService) DeleteItem(ctx context.Context, id string) (bool, error) {
 	dbClient := srv.dbClient
 
-	if err := dbClient.NewRef("invoice/items/"+strconv.Itoa(id)).Delete(ctx); err != nil {
+	if err := dbClient.NewRef("invoice/items/"+id).Delete(ctx); err != nil {
 		log.Println(err)
 		return false, ApiError
 	}
@@ -98,13 +99,13 @@ func (srv itemService) DeleteItem(ctx context.Context, id int) (bool, error) {
     return true, nil
 }
 
-func (srv itemService) GetAllItem(ctx context.Context) (map[int]Item_db, error) {
+func (srv itemService) GetAllItem(ctx context.Context) (map[string]Item_db, error) {
 	dbClient := srv.dbClient
 
-	var result map[int]Item_db
+	var result map[string]Item_db
 	if err := dbClient.NewRef("invoice/items/").Get(ctx, &result); err != nil {
 		log.Println(err)
-		return map[int]Item_db{}, ApiError
+		return map[string]Item_db{}, ApiError
 	}
 
     return result, nil
