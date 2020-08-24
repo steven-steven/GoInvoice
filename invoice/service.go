@@ -177,6 +177,9 @@ func (srv invoiceService) GetAllInvoice(ctx context.Context) (map[string]Invoice
 		log.Println(err)
 		return map[string]Invoice_db{}, ApiError
 	}
+	if (result == nil){
+		return map[string]Invoice_db{}, nil
+	}
 	for k, inv := range result {
         if(inv.Items == nil){
 			//https://github.com/golang/go/issues/3117
