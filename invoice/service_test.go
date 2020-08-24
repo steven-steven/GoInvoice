@@ -6,6 +6,7 @@ import (
 	"time"
 	// "fmt"
 	// "reflect"
+	"math"
 	"github.com/stretchr/testify/assert"
     "github.com/steven-steven/GoInvoice/config"
 )
@@ -18,12 +19,12 @@ var itemQuantity2 = 2
 var itemAmount2 = itemRate2*uint64(itemQuantity2)
 var itemTax1 = uint64(5000)
 var itemTax2 = uint64(6000)
-var total_1_2_tax1 = itemAmount1 + itemAmount2 + itemTax1
-var total_1_2_tax2 = itemAmount1 + itemAmount2 + itemTax2
-var total_1_tax1 = itemAmount1 + itemTax1
-var total_2_tax2 = itemAmount2 + itemTax2
-var total_1_tax2 = itemAmount1 + itemTax2
-var total_2_tax1 = itemAmount2 + itemTax1
+var total_1_2_tax1 = (itemAmount1 + itemAmount2) + uint64(math.Round(float64(itemTax1)/100*float64(itemAmount1 + itemAmount2)))
+var total_1_2_tax2 = (itemAmount1 + itemAmount2) + uint64(math.Round(float64(itemTax2)/100*float64(itemAmount1 + itemAmount2)))
+var total_1_tax1 = itemAmount1 + uint64(math.Round(float64(itemTax1)/100*float64(itemAmount1)))
+var total_2_tax2 = itemAmount2 + uint64(math.Round(float64(itemTax2)/100*float64(itemAmount2)))
+var total_2_tax1 = itemAmount2 + uint64(math.Round(float64(itemTax1)/100*float64(itemAmount2)))
+var total_1_tax2 = itemAmount1 + uint64(math.Round(float64(itemTax2)/100*float64(itemAmount1)))
 
 func TestPostInvoice(t *testing.T) {
 	srv, ctx := setup()	//new test DB

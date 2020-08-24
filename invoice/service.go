@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"errors"
 	"log"
+	"math"
 	"sync"
 	"time"
 	"github.com/jeremyschlatter/firebase/db"
@@ -94,8 +95,8 @@ func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice
 		inv.Items[i].Amount = &calculatedQuantity
 		total += calculatedQuantity
 	}
-	total += (*inv.Tax)
-
+	total += uint64(math.Round((float64(*inv.Tax)/100)*float64(total)))
+	
 	invoiceId := dateId+"-"+fmt.Sprintf("%05d", id)
 	acc := Invoice_db{
 		Invoice: inv,
@@ -140,7 +141,7 @@ func (srv invoiceService) PutInvoice(ctx context.Context, id string, inv Invoice
 		inv.Items[i].Amount = &calculatedQuantity
 		total += calculatedQuantity
 	}
-	total += (*inv.Tax)
+	total += uint64(math.Round((float64(*inv.Tax)/100)*float64(total)))
 
 	newRecord := Invoice_db{
 		Invoice: inv,
