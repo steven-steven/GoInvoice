@@ -24,7 +24,8 @@ type Invoice_db struct {
 	Invoice
 	ID			string	`json:"id"`
 	CreatedAt	string	`json:"createdAt"`
-	Total		*uint64	`json:"total,omitempty"`
+	Total		*uint64	`json:"total"`
+	SubTotal	*uint64	`json:"subtotal"`
 }
 
 type Invoice struct {
@@ -89,13 +90,14 @@ func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice
 
 	// Calculate total: sum all items + tax
 	var total uint64
+	var subtotal uint64
 	for i, item := range inv.Items {
 		// replace amount value
 		calculatedQuantity := (uint64(item.Quantity) * (*item.Rate))
 		inv.Items[i].Amount = &calculatedQuantity
-		total += calculatedQuantity
+		subtotal += calculatedQuantity
 	}
-	total += uint64(math.Round((float64(*inv.Tax)/100)*float64(total)))
+	total = subtotal + uint64(math.Round((float64(*inv.Tax)/100)*float64(subtotal)))
 	
 	invoiceId := dateId+"-"+fmt.Sprintf("%05d", id)
 	acc := Invoice_db{
@@ -103,6 +105,7 @@ func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice
 		ID: invoiceId,
 		CreatedAt: now.Format("02/01/2006"),
 		Total: &total,
+		SubTotal: &subtotal,
 	}
 
 	if err := dbClient.NewRef("invoice/documents/"+invoiceId).Set(ctx, acc); err != nil {
@@ -135,19 +138,21 @@ func (srv invoiceService) PutInvoice(ctx context.Context, id string, inv Invoice
 
 	// Calculate total: sum all items + tax
 	var total uint64
+	var subtotal uint64
 	for i, item := range inv.Items {
 		// replace amount value
 		calculatedQuantity := (uint64(item.Quantity) * (*item.Rate))
 		inv.Items[i].Amount = &calculatedQuantity
-		total += calculatedQuantity
+		subtotal += calculatedQuantity
 	}
-	total += uint64(math.Round((float64(*inv.Tax)/100)*float64(total)))
-
+	total = subtotal + uint64(math.Round((float64(*inv.Tax)/100)*float64(subtotal)))
+	
 	newRecord := Invoice_db{
 		Invoice: inv,
 		ID: id,
 		CreatedAt: now.Format("02/01/2006"),
 		Total: &total,
+		SubTotal: &subtotal,
 	}
 
 	if err := dbClient.NewRef("invoice/documents/"+id).Set(ctx, newRecord); err != nil {

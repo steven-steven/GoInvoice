@@ -19,8 +19,13 @@ var itemQuantity2 = 2
 var itemAmount2 = itemRate2*uint64(itemQuantity2)
 var itemTax1 = uint64(5000)
 var itemTax2 = uint64(6000)
-var total_1_2_tax1 = (itemAmount1 + itemAmount2) + uint64(math.Round(float64(itemTax1)/100*float64(itemAmount1 + itemAmount2)))
-var total_1_2_tax2 = (itemAmount1 + itemAmount2) + uint64(math.Round(float64(itemTax2)/100*float64(itemAmount1 + itemAmount2)))
+
+var subtotal_1_2 = itemAmount1 + itemAmount2
+var total_1_2_tax1 = subtotal_1_2 + uint64(math.Round(float64(itemTax1)/100*float64(subtotal_1_2)))
+var total_1_2_tax2 = subtotal_1_2 + uint64(math.Round(float64(itemTax2)/100*float64(subtotal_1_2)))
+
+var subtotal_1 = itemAmount1
+var subtotal_2 = itemAmount2
 var total_1_tax1 = itemAmount1 + uint64(math.Round(float64(itemTax1)/100*float64(itemAmount1)))
 var total_2_tax2 = itemAmount2 + uint64(math.Round(float64(itemTax2)/100*float64(itemAmount2)))
 var total_2_tax1 = itemAmount2 + uint64(math.Round(float64(itemTax1)/100*float64(itemAmount2)))
@@ -36,7 +41,7 @@ func TestPostInvoice(t *testing.T) {
     }{
         "successful post": {
 			input:  Invoice{"PT A",&ClientAddress{"690 King St","Cilegon","Banten","Indonesia","154321"},"24/03/2019",[]Item{Item{"Paku","",&itemRate1,itemQuantity1,&itemAmount1},Item{"Dua","",&itemRate2,itemQuantity2,&itemAmount2}},&itemTax1},
-            output:	Invoice_db{Invoice{"PT A",&ClientAddress{"690 King St","Cilegon","Banten","Indonesia","154321"},"24/03/2019",[]Item{Item{"Paku","",&itemRate1,itemQuantity1,&itemAmount1},Item{"Dua","",&itemRate2,itemQuantity2,&itemAmount2}},&itemTax1},"1903-00001",time.Now().Format("02/01/2006"),&total_1_2_tax1},
+            output:	Invoice_db{Invoice{"PT A",&ClientAddress{"690 King St","Cilegon","Banten","Indonesia","154321"},"24/03/2019",[]Item{Item{"Paku","",&itemRate1,itemQuantity1,&itemAmount1},Item{"Dua","",&itemRate2,itemQuantity2,&itemAmount2}},&itemTax1},"1903-00001",time.Now().Format("02/01/2006"),&total_1_2_tax1,&subtotal_1_2},
            	err:    nil,
 		},
 	}
@@ -66,7 +71,7 @@ func TestGetInvoice(t *testing.T) {
     }{
         "successful get": {
             input:  "2003-00001",
-            output:	Invoice_db{Invoice{"PT B",nil,"24/03/2020",[]Item{Item{"Batu","",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax2},"2003-00001",time.Now().Format("02/01/2006"),&total_1_tax2},
+            output:	Invoice_db{Invoice{"PT B",nil,"24/03/2020",[]Item{Item{"Batu","",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax2},"2003-00001",time.Now().Format("02/01/2006"),&total_1_tax2,&subtotal_1},
            	err:    nil,
 		},
 	}
@@ -97,7 +102,7 @@ func TestPutInvoice(t *testing.T) {
         "successful put": {
 			input_id:	"1903-00001",
             input:  	Invoice{"PT C",&ClientAddress{Address:"St",PostalCode:""},"24/03/2019",[]Item{Item{"Paku","",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax1},
-            output:		Invoice_db{Invoice{"PT C",&ClientAddress{Address:"St",PostalCode:""},"24/03/2019",[]Item{Item{"Paku","",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax1},"1903-00001",time.Now().Format("02/01/2006"),&total_1_tax1},
+            output:		Invoice_db{Invoice{"PT C",&ClientAddress{Address:"St",PostalCode:""},"24/03/2019",[]Item{Item{"Paku","",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax1},"1903-00001",time.Now().Format("02/01/2006"),&total_1_tax1,&subtotal_1},
            	err:    	nil,
 		},
 	}
@@ -162,8 +167,8 @@ func TestGetAllInvoice(t *testing.T) {
     }{
         "successful get all": {
 			output:	map[string]Invoice_db{
-				"2003-00001": Invoice_db{Invoice{"PT B",nil,"24/03/2020",[]Item{Item{"Batu","",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax2},"2003-00001",time.Now().Format("02/01/2006"),&total_1_tax2},
-				"1903-00001": Invoice_db{Invoice{"PT A",nil,"24/03/2019",[]Item{Item{"Paku","",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax1},"1903-00001",time.Now().Format("02/01/2006"),&total_1_tax1},
+				"2003-00001": Invoice_db{Invoice{"PT B",nil,"24/03/2020",[]Item{Item{"Batu","",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax2},"2003-00001",time.Now().Format("02/01/2006"),&total_1_tax2,&subtotal_1},
+				"1903-00001": Invoice_db{Invoice{"PT A",nil,"24/03/2019",[]Item{Item{"Paku","",&itemRate1,itemQuantity1,&itemAmount1}},&itemTax1},"1903-00001",time.Now().Format("02/01/2006"),&total_1_tax1,&subtotal_1},
 			},
            	err:    nil,
 		},
