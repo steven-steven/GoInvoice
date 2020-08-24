@@ -44,6 +44,7 @@ type ClientAddress struct {
 
 type Item struct {
 	Name     	string	`json:"name"`
+	Description string	`json:"description"`
 	Rate      	*uint64	`json:"rate"`
 	Quantity 	int		`json:"quantity"`
 	Amount		*uint64	`json:"amount"`
