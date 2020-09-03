@@ -31,6 +31,8 @@ type Invoice_db struct {
 type Invoice struct {
 	Client		string	`json:"client"`
 	ClientAddress *ClientAddress `json:"client_address,omitempty"`
+	CatatanInvoice string `json:"catatanInvoice"`
+	CatatanKwitansi string `json:"catatanKwitansi"`
 	Date      	string  `json:"date"`
 	Items 		[]Item 	`json:"items"`
 	Tax			*uint64	`json:"tax,omitempty"`
@@ -48,7 +50,8 @@ type Item struct {
 	Name     	string	`json:"name"`
 	Description string	`json:"description"`
 	Rate      	*uint64	`json:"rate"`
-	Quantity 	int		`json:"quantity"`
+	MetricQuantity *uint64 `json:"metricQuantity"` // metric * 1000
+	Quantity 	int		`json:"quantity,omitempty"`
 	Amount		*uint64	`json:"amount"`
 }
 
@@ -91,9 +94,13 @@ func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice
 	// Calculate total: sum all items + tax
 	var total uint64
 	var subtotal uint64
+	var metricQuantity_normalized uint64
 	for i, item := range inv.Items {
 		// replace amount value
-		calculatedQuantity := (uint64(item.Quantity) * (*item.Rate))
+		if item.MetricQuantity != nil {
+			metricQuantity_normalized = (*item.MetricQuantity)/1000
+		}
+		calculatedQuantity := ((uint64(item.Quantity)+metricQuantity_normalized) * (*item.Rate))
 		inv.Items[i].Amount = &calculatedQuantity
 		subtotal += calculatedQuantity
 	}
@@ -139,9 +146,13 @@ func (srv invoiceService) PutInvoice(ctx context.Context, id string, inv Invoice
 	// Calculate total: sum all items + tax
 	var total uint64
 	var subtotal uint64
+	var metricQuantity_normalized uint64
 	for i, item := range inv.Items {
 		// replace amount value
-		calculatedQuantity := (uint64(item.Quantity) * (*item.Rate))
+		if item.MetricQuantity != nil {
+			metricQuantity_normalized = (*item.MetricQuantity)/1000
+		}
+		calculatedQuantity := ((uint64(item.Quantity)+metricQuantity_normalized) * (*item.Rate))
 		inv.Items[i].Amount = &calculatedQuantity
 		subtotal += calculatedQuantity
 	}
