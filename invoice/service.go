@@ -94,15 +94,16 @@ func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice
 	// Calculate total: sum all items + tax
 	var total uint64
 	var subtotal uint64
-	var metricQuantity_normalized uint64
+	var metricQuantity_normalized float64
 	for i, item := range inv.Items {
 		// replace amount value
 		if item.MetricQuantity != nil {
-			metricQuantity_normalized = (*item.MetricQuantity)/1000
+			metricQuantity_normalized = float64(*item.MetricQuantity)/1000
 		}
-		calculatedQuantity := ((uint64(item.Quantity)+metricQuantity_normalized) * (*item.Rate))
-		inv.Items[i].Amount = &calculatedQuantity
-		subtotal += calculatedQuantity
+		calculatedAmount := ((float64(item.Quantity)+metricQuantity_normalized) * float64(*item.Rate))
+		intAmount := uint64(math.Round(calculatedAmount))
+		inv.Items[i].Amount = &intAmount
+		subtotal += intAmount
 	}
 	total = subtotal + uint64(math.Round((float64(*inv.Tax)/100)*float64(subtotal)))
 	
@@ -146,15 +147,16 @@ func (srv invoiceService) PutInvoice(ctx context.Context, id string, inv Invoice
 	// Calculate total: sum all items + tax
 	var total uint64
 	var subtotal uint64
-	var metricQuantity_normalized uint64
+	var metricQuantity_normalized float64
 	for i, item := range inv.Items {
 		// replace amount value
 		if item.MetricQuantity != nil {
-			metricQuantity_normalized = (*item.MetricQuantity)/1000
+			metricQuantity_normalized = float64(*item.MetricQuantity)/1000
 		}
-		calculatedQuantity := ((uint64(item.Quantity)+metricQuantity_normalized) * (*item.Rate))
-		inv.Items[i].Amount = &calculatedQuantity
-		subtotal += calculatedQuantity
+		calculatedAmount := ((float64(item.Quantity)+metricQuantity_normalized) * float64(*item.Rate))
+		intAmount := uint64(math.Round(calculatedAmount))
+		inv.Items[i].Amount = &intAmount
+		subtotal += intAmount
 	}
 	total = subtotal + uint64(math.Round((float64(*inv.Tax)/100)*float64(subtotal)))
 	

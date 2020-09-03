@@ -16,7 +16,7 @@ var itemQuantity1 = 3
 var itemAmount1 = itemRate1*uint64(itemQuantity1)
 var itemRate2 = uint64(5000)
 var metricQuantity2 = uint64(543500)
-var itemAmount2 = itemRate2*(metricQuantity2/1000)
+var itemAmount2 = uint64(float64(itemRate2)*float64(metricQuantity2)/1000)
 var itemTax1 = uint64(5000)
 var itemTax2 = uint64(6000)
 
