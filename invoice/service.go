@@ -73,11 +73,12 @@ func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice
 	dbClient := srv.dbClient
 	
 	t, _ := time.Parse("02/01/2006", inv.Date)
-	dateId := t.Format("0601")
+	yearMonthCode := t.Format("0601")
+	year := t.Format("06")
 
 	//get invoice id
 	mux_incrementId.Lock()
-	idRef := dbClient.NewRef("invoice/lastId/"+dateId)
+	idRef := dbClient.NewRef("invoice/lastId/"+year)
 	var id int
 	if err := idRef.Get(ctx, &id); err != nil {
 		log.Fatalln("Error reading from database:", err)
@@ -107,7 +108,7 @@ func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice
 	}
 	total = subtotal + uint64(math.Round((float64(*inv.Tax)/100)*float64(subtotal)))
 	
-	invoiceId := dateId+"-"+fmt.Sprintf("%05d", id)
+	invoiceId := yearMonthCode+"-"+fmt.Sprintf("%05d", id)
 	acc := Invoice_db{
 		Invoice: inv,
 		ID: invoiceId,
