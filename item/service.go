@@ -107,6 +107,9 @@ func (srv itemService) GetAllItem(ctx context.Context) (map[string]Item_db, erro
 		log.Println(err)
 		return map[string]Item_db{}, ApiError
 	}
+	if (result == nil){
+		return map[string]Item_db{}, nil
+	}
 
     return result, nil
 }
