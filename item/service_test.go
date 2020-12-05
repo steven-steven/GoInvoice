@@ -4,15 +4,29 @@ import (
     "context"
     "testing"
 	"time"
-	// "fmt"
+	"strconv"
 	// "reflect"
 	"github.com/stretchr/testify/assert"
-    "github.com/steven-steven/GoInvoice/config"
+	"github.com/steven-steven/GoInvoice/config"
 )
 
 var itemRate1 = uint64(10000)
+var id1 = "item_1"
+var id2 = "item_2"
+
+func mock_defer_idGenerator() func() {
+	// mock idGenerator() to return id1.
+	origIdGenerator := idGenerator
+	num := 0
+	idGenerator = func() string {
+		num += 1
+		return "item_" + strconv.Itoa(num)
+	}
+	return func() { idGenerator = origIdGenerator }
+}
 
 func TestPostItem(t *testing.T) {
+	defer mock_defer_idGenerator()()
 	srv, ctx := setup()	//new test DB
 	
 	tests := map[string]struct {
@@ -22,7 +36,7 @@ func TestPostItem(t *testing.T) {
     }{
         "successful post": {
 			input:  Item{"PT A","defaultDescription",&itemRate1},
-            output:	Item_db{Item{"PT A","defaultDescription",&itemRate1},"item_1",time.Now().Format("02/01/2006")},
+            output:	Item_db{Item{"PT A","defaultDescription",&itemRate1},id1,time.Now().Format("02/01/2006")},
            	err:    nil,
 		},
 	}
@@ -38,6 +52,7 @@ func TestPostItem(t *testing.T) {
 }
 
 func TestDeleteItem(t *testing.T) {
+	defer mock_defer_idGenerator()()
 	srv, ctx := setup()	//new test DB
 	
 	//initial data
@@ -50,7 +65,7 @@ func TestDeleteItem(t *testing.T) {
         err    		error
     }{
         "successful delete": {
-			input:	"item_2",
+			input:	id2,
 			output: true,
            	err:	nil,
 		},
@@ -71,6 +86,7 @@ func TestDeleteItem(t *testing.T) {
 }
 
 func TestGetAllItem(t *testing.T) {
+	defer mock_defer_idGenerator()()
 	srv, ctx := setup()	//new test DB
 	
 	//initial data
@@ -83,8 +99,8 @@ func TestGetAllItem(t *testing.T) {
     }{
         "successful get all": {
 			output:	map[string]Item_db{
-				"item_1": Item_db{Item{"PT B","defaultDescription",&itemRate1},"item_1",time.Now().Format("02/01/2006")},
-				"item_2": Item_db{Item{"PT A","defaultDescription",&itemRate1},"item_2",time.Now().Format("02/01/2006")},
+				id1: Item_db{Item{"PT B","defaultDescription",&itemRate1},id1,time.Now().Format("02/01/2006")},
+				id2: Item_db{Item{"PT A","defaultDescription",&itemRate1},id2,time.Now().Format("02/01/2006")},
 			},
            	err:    nil,
 		},

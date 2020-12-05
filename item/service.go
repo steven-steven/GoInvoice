@@ -5,9 +5,9 @@ import (
 	"errors"
 	"log"
 	"sync"
-	"strconv"
 	"time"
 	"github.com/jeremyschlatter/firebase/db"
+	"github.com/steven-steven/GoInvoice/utils"
 )
 
 type Service interface {
@@ -38,6 +38,8 @@ func NewService(dbClient db.Client) Service {
     return itemService{dbClient}
 }
 
+var idGenerator = utils.GenerateUUID
+
 // --- Services ---
 var (
 	ApiError = errors.New("API Error")
@@ -46,27 +48,12 @@ var (
 
 func (srv itemService) PostItem(ctx context.Context, item Item) (Item_db, error) {
 	dbClient := srv.dbClient
-	
-	//get item id
-	mux_incrementId.Lock()
-	idRef := dbClient.NewRef("invoice/lastItemId")
-	var id int
-	if err := idRef.Get(ctx, &id); err != nil {
-		log.Fatalln("Error reading from database:", err)
-	}
-	id++
-	if err := idRef.Set(ctx, id); err != nil {
-		log.Fatal(err)
-		return Item_db{}, ApiError
-	}
-	mux_incrementId.Unlock()
 
 	now := time.Now()
-
-	itemId := "item_"+strconv.Itoa(id)
+	itemId := idGenerator()
 	acc := Item_db{
 		Item: item,
-		ID: itemId,
+		ID: itemId, // generate uuid
 		CreatedAt: now.Format("02/01/2006"),
 	}
 

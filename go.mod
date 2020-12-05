@@ -5,6 +5,7 @@ go 1.14
 require (
 	firebase.google.com/go v3.12.1+incompatible
 	github.com/go-kit/kit v0.8.0
+	github.com/google/uuid v1.1.2
 	github.com/gorilla/mux v1.7.4
 	github.com/jeremyschlatter/firebase v0.0.0-20181027073148-aaaaf8af17bb
 	github.com/spf13/viper v1.6.3

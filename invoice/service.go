@@ -2,13 +2,13 @@ package invoice
 
 import (
 	"context"
-	"fmt"
 	"errors"
 	"log"
 	"math"
 	"sync"
 	"time"
 	"github.com/jeremyschlatter/firebase/db"
+	"github.com/steven-steven/GoInvoice/utils"
 )
 
 type Service interface {
@@ -29,6 +29,7 @@ type Invoice_db struct {
 }
 
 type Invoice struct {
+	InvoiceNo	string	`json:"invoice_no"`
 	Client		string	`json:"client"`
 	ClientAddress *ClientAddress `json:"client_address,omitempty"`
 	CatatanInvoice string `json:"catatanInvoice"`
@@ -63,6 +64,8 @@ func NewService(dbClient db.Client) Service {
     return invoiceService{dbClient}
 }
 
+var idGenerator = utils.GenerateUUID
+
 // --- Services ---
 var (
 	ApiError = errors.New("API Error")
@@ -71,26 +74,6 @@ var (
 
 func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice_db, error) {
 	dbClient := srv.dbClient
-	
-	t, _ := time.Parse("02/01/2006", inv.Date)
-	yearMonthCode := t.Format("0601")
-	year := t.Format("06")
-
-	//get invoice id
-	mux_incrementId.Lock()
-	idRef := dbClient.NewRef("invoice/lastId/"+year)
-	var id int
-	if err := idRef.Get(ctx, &id); err != nil {
-		log.Fatalln("Error reading from database:", err)
-	}
-	id++
-	if err := idRef.Set(ctx, id); err != nil {
-		log.Fatal(err)
-		return Invoice_db{}, ApiError
-	}
-	mux_incrementId.Unlock()
-
-	now := time.Now()
 
 	// Calculate total: sum all items + tax
 	var total uint64
@@ -108,7 +91,9 @@ func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice
 	}
 	total = subtotal + uint64(math.Round((float64(*inv.Tax)/100)*float64(subtotal)))
 	
-	invoiceId := yearMonthCode+"-"+fmt.Sprintf("%05d", id)
+	now := time.Now()
+	invoiceId := idGenerator()
+
 	acc := Invoice_db{
 		Invoice: inv,
 		ID: invoiceId,
