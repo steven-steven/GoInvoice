@@ -20,19 +20,19 @@ func newHTTPServer(ctx context.Context, endpoints combinedEndpoint) http.Handler
         invoice.EncodeResponse,
     ))
 
-    r.Methods("GET").Path("/invoice/{id:[0-9]{4}-[0-9]{5}}").Handler(httptransport.NewServer(
+    r.Methods("GET").Path("/invoice/{id:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}}").Handler(httptransport.NewServer(
         endpoints.GetInvoiceEndpoint,
         invoice.DecodeGetInvoiceRequest,
         invoice.EncodeResponse,
     ))
 
-    r.Methods("PUT").Path("/invoice/{id:[0-9]{4}-[0-9]{5}}").Handler(httptransport.NewServer(
+    r.Methods("PUT").Path("/invoice/{id:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}}").Handler(httptransport.NewServer(
         endpoints.PutInvoiceEndpoint,
         invoice.DecodePutInvoiceRequest,
         invoice.EncodeResponse,
 	))
 	
-	r.Methods("DELETE").Path("/invoice/{id:[0-9]{4}-[0-9]{5}}").Handler(httptransport.NewServer(
+	r.Methods("DELETE").Path("/invoice/{id:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}}").Handler(httptransport.NewServer(
         endpoints.DeleteInvoiceEndpoint,
         invoice.DecodeDeleteInvoiceRequest,
         invoice.EncodeResponse,
@@ -52,7 +52,7 @@ func newHTTPServer(ctx context.Context, endpoints combinedEndpoint) http.Handler
         item.EncodeResponse,
     ))
 	
-	r.Methods("DELETE").Path("/item/{id:item_[0-9]+}").Handler(httptransport.NewServer(
+	r.Methods("DELETE").Path("/item/{id:[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}}").Handler(httptransport.NewServer(
         endpoints.DeleteItemEndpoint,
         item.DecodeDeleteItemRequest,
         item.EncodeResponse,
