@@ -35,7 +35,7 @@ type itemService struct{
 }
 
 func NewService(dbClient db.Client) Service {
-    return itemService{dbClient}
+	return itemService{dbClient}
 }
 
 var idGenerator = utils.GenerateUUID
@@ -66,13 +66,13 @@ func (srv itemService) PostItem(ctx context.Context, item Item) (Item_db, error)
 }
 
 func (srv itemService) GetItem(ctx context.Context, id string) (Item_db, error) {
-    dbClient := srv.dbClient
+  dbClient := srv.dbClient
 	
 	var res Item_db
-	if err := dbClient.NewRef("invoice/documents/"+id).Get(ctx, &res); (err != nil || res.ID == "") {
+	if err := dbClient.NewRef("invoice/items/"+id).Get(ctx, &res); (err != nil || res.ID == "") {
 		return Item_db{}, ApiError
 	}
-    return res, nil
+  return res, nil
 }
 
 func (srv itemService) DeleteItem(ctx context.Context, id string) (bool, error) {
@@ -83,7 +83,7 @@ func (srv itemService) DeleteItem(ctx context.Context, id string) (bool, error) 
 		return false, ApiError
 	}
 
-    return true, nil
+	return true, nil
 }
 
 func (srv itemService) GetAllItem(ctx context.Context) (map[string]Item_db, error) {
@@ -98,5 +98,5 @@ func (srv itemService) GetAllItem(ctx context.Context) (map[string]Item_db, erro
 		return map[string]Item_db{}, nil
 	}
 
-    return result, nil
+	return result, nil
 }

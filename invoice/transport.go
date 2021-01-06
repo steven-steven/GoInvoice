@@ -85,11 +85,11 @@ func DecodeDeleteInvoiceRequest(ctx context.Context, r *http.Request) (interface
 }
 
 func DecodeGetAllInvoiceRequest(ctx context.Context, r *http.Request) (interface{}, error) {
-    var req getAllInvoiceRequest
-    return req, nil
+	var req getAllInvoiceRequest
+	return req, nil
 }
 
 // JSON to Models
 func EncodeResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
-    return json.NewEncoder(w).Encode(response)
+	return json.NewEncoder(w).Encode(response)
 }

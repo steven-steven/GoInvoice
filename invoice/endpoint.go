@@ -1,15 +1,15 @@
 package invoice
 
 import (
-    "context"
+  "context"
 	"log"
-    "github.com/go-kit/kit/endpoint"
+  "github.com/go-kit/kit/endpoint"
 )
 
 // Endpoints are exposed
 type Endpoints struct {
-    PostInvoiceEndpoint     endpoint.Endpoint
-    GetInvoiceEndpoint   	endpoint.Endpoint
+  PostInvoiceEndpoint     endpoint.Endpoint
+  GetInvoiceEndpoint   	endpoint.Endpoint
 	PutInvoiceEndpoint 		endpoint.Endpoint
 	DeleteInvoiceEndpoint 	endpoint.Endpoint
 	GetAllInvoiceEndpoint 	endpoint.Endpoint

@@ -12,7 +12,7 @@ import (
 )
 
 type Service interface {
-    PostInvoice(ctx context.Context, inv Invoice) (Invoice_db, error)
+	PostInvoice(ctx context.Context, inv Invoice) (Invoice_db, error)
 	GetInvoice(ctx context.Context, id string) (Invoice_db, error)
 	PutInvoice(ctx context.Context, id string, inv Invoice) (Invoice_db, error)
 	DeleteInvoice(ctx context.Context, id string) (bool, error)
@@ -61,7 +61,7 @@ type invoiceService struct{
 }
 
 func NewService(dbClient db.Client) Service {
-    return invoiceService{dbClient}
+	return invoiceService{dbClient}
 }
 
 var idGenerator = utils.GenerateUUID
@@ -111,7 +111,7 @@ func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice
 }
 
 func (srv invoiceService) GetInvoice(ctx context.Context, id string) (Invoice_db, error) {
-    dbClient := srv.dbClient
+	dbClient := srv.dbClient
 	
 	var res Invoice_db
 	if err := dbClient.NewRef("invoice/documents/"+id).Get(ctx, &res); (err != nil || res.ID == "") {
@@ -121,11 +121,11 @@ func (srv invoiceService) GetInvoice(ctx context.Context, id string) (Invoice_db
 	if(res.Items == nil){
 		res.Items = make([]Item, 0)
 	}
-    return res, nil
+	return res, nil
 }
 
 func (srv invoiceService) PutInvoice(ctx context.Context, id string, inv Invoice) (Invoice_db, error) {
-    dbClient := srv.dbClient
+	dbClient := srv.dbClient
 
 	//new data
 	now := time.Now()
@@ -158,7 +158,7 @@ func (srv invoiceService) PutInvoice(ctx context.Context, id string, inv Invoice
 		log.Println(err)
 		return Invoice_db{}, ApiError
 	}
-    return newRecord, nil
+	return newRecord, nil
 }
 
 func (srv invoiceService) DeleteInvoice(ctx context.Context, id string) (bool, error) {
@@ -169,7 +169,7 @@ func (srv invoiceService) DeleteInvoice(ctx context.Context, id string) (bool, e
 		return false, ApiError
 	}
 
-    return true, nil
+	return true, nil
 }
 
 func (srv invoiceService) GetAllInvoice(ctx context.Context) (map[string]Invoice_db, error) {
@@ -185,7 +185,7 @@ func (srv invoiceService) GetAllInvoice(ctx context.Context) (map[string]Invoice
 		return map[string]Invoice_db{}, nil
 	}
 	for k, inv := range result {
-        if(inv.Items == nil){
+    if(inv.Items == nil){
 			//https://github.com/golang/go/issues/3117
 			var tmp = result[k]
 			tmp.Items = make([]Item, 0)
@@ -193,5 +193,5 @@ func (srv invoiceService) GetAllInvoice(ctx context.Context) (map[string]Invoice
 		}
 	}
 
-    return result, nil
+	return result, nil
 }

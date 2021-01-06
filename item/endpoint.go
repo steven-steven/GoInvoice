@@ -8,7 +8,7 @@ import (
 
 // Endpoints are exposed
 type Endpoints struct {
-    PostItemEndpoint    endpoint.Endpoint
+	PostItemEndpoint    endpoint.Endpoint
 	DeleteItemEndpoint 	endpoint.Endpoint
 	GetAllItemEndpoint 	endpoint.Endpoint
 }
