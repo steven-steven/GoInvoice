@@ -56,19 +56,21 @@ func main() {
 	// mapping endpoints
 	endpoints := combinedEndpoint{
 		&invoice.Endpoints{
-				PostInvoiceEndpoint:	invoice.MakePostInvoiceEndpoint(srv),
-				GetInvoiceEndpoint:   	invoice.MakeGetInvoiceEndpoint(srv),
-				PutInvoiceEndpoint: 	invoice.MakePutInvoiceEndpoint(srv),
-				DeleteInvoiceEndpoint: 	invoice.MakeDeleteInvoiceEndpoint(srv),
-				GetAllInvoiceEndpoint: 	invoice.MakeGetAllInvoiceEndpoint(srv),
+			PostInvoiceEndpoint:	invoice.MakePostInvoiceEndpoint(srv),
+			GetInvoiceEndpoint:   	invoice.MakeGetInvoiceEndpoint(srv),
+			PutInvoiceEndpoint: 	invoice.MakePutInvoiceEndpoint(srv),
+			DeleteInvoiceEndpoint: 	invoice.MakeDeleteInvoiceEndpoint(srv),
+			GetAllInvoiceEndpoint: 	invoice.MakeGetAllInvoiceEndpoint(srv),
 		},
 		&item.Endpoints{
-				PostItemEndpoint:	    item.MakePostItemEndpoint(srvItem),
-				DeleteItemEndpoint: 	item.MakeDeleteItemEndpoint(srvItem),
-				GetAllItemEndpoint: 	item.MakeGetAllItemEndpoint(srvItem),
+			PostItemEndpoint:	    item.MakePostItemEndpoint(srvItem),
+			DeleteItemEndpoint: 	item.MakeDeleteItemEndpoint(srvItem),
+			GetAllItemEndpoint: 	item.MakeGetAllItemEndpoint(srvItem),
 		},
 		&customer.Endpoints{
 			PostCustomerEndpoint:	    customer.MakePostCustomerEndpoint(srvCustomer),
+			GetCustomerEndpoint:   		customer.MakeGetCustomerEndpoint(srvCustomer),
+			PutCustomerEndpoint: 			customer.MakePutCustomerEndpoint(srvCustomer),
 			DeleteCustomerEndpoint: 	customer.MakeDeleteCustomerEndpoint(srvCustomer),
 			GetAllCustomerEndpoint: 	customer.MakeGetAllCustomerEndpoint(srvCustomer),
 		},
