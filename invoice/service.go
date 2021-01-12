@@ -30,21 +30,12 @@ type Invoice_db struct {
 
 type Invoice struct {
 	InvoiceNo	string	`json:"invoice_no"`
-	Client		string	`json:"client"`
-	ClientAddress *ClientAddress `json:"client_address,omitempty"`
+	CustomerId		string	`json:"customerId"`
 	CatatanInvoice string `json:"catatanInvoice"`
 	CatatanKwitansi string `json:"catatanKwitansi"`
 	Date      	string  `json:"date"`
 	Items 		[]Item 	`json:"items"`
 	Tax			*uint64	`json:"tax,omitempty"`
-}
-
-type ClientAddress struct {
-	Address		string	`json:"address,omitempty"`
-	City		string	`json:"city,omitempty"`
-	State      	string  `json:"state,omitempty"`
-	Country 	string 	`json:"country,omitempty"`
-	PostalCode	string	`json:"postal_code,omitempty"`
 }
 
 type Item struct {
