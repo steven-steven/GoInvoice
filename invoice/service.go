@@ -33,6 +33,7 @@ type Invoice struct {
 	CustomerId		string	`json:"customerId"`
 	CatatanInvoice string `json:"catatanInvoice"`
 	CatatanKwitansi string `json:"catatanKwitansi"`
+	KeteranganKwitansi string `json:"keteranganKwitansi"`
 	Date      	string  `json:"date"`
 	Items 		[]Item 	`json:"items"`
 	Tax			*uint64	`json:"tax,omitempty"`
