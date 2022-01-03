@@ -41,13 +41,13 @@ type Invoice struct {
 }
 
 type Item struct {
-	Name           string  `json:"name"`
-	Description    string  `json:"description"`
-	Rate           *uint64 `json:"rate"`
-	MetricQuantity *uint64 `json:"metricQuantity"` // metric * 1000
-	Unit           string  `json:"unit"`
-	Quantity       int     `json:"quantity,omitempty"`
-	Amount         *uint64 `json:"amount"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Rate        *uint64 `json:"rate"`
+	IsMetric    bool    `json:"isMetric"`
+	Unit        string  `json:"unit"`
+	Quantity    *uint64 `json:"quantity"`
+	Amount      *uint64 `json:"amount"`
 }
 
 type invoiceService struct {
@@ -72,13 +72,13 @@ func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice
 	// Calculate total: sum all items + tax
 	var total uint64
 	var subtotal uint64
-	var metricQuantity_normalized float64
+	var quantity float64
 	for i, item := range inv.Items {
-		// replace amount value
-		if item.MetricQuantity != nil {
-			metricQuantity_normalized = float64(*item.MetricQuantity) / 1000
+		quantity = float64(*item.Quantity)
+		if item.IsMetric {
+			quantity /= 1000
 		}
-		calculatedAmount := ((float64(item.Quantity) + metricQuantity_normalized) * float64(*item.Rate))
+		calculatedAmount := (quantity * float64(*item.Rate))
 		intAmount := uint64(math.Round(calculatedAmount))
 		inv.Items[i].Amount = &intAmount
 		subtotal += intAmount
@@ -127,13 +127,13 @@ func (srv invoiceService) PutInvoice(ctx context.Context, id string, inv Invoice
 	// Calculate total: sum all items + tax
 	var total uint64
 	var subtotal uint64
-	var metricQuantity_normalized float64
+	var quantity float64
 	for i, item := range inv.Items {
-		// replace amount value
-		if item.MetricQuantity != nil {
-			metricQuantity_normalized = float64(*item.MetricQuantity) / 1000
+		quantity = float64(*item.Quantity)
+		if item.IsMetric {
+			quantity /= 1000
 		}
-		calculatedAmount := ((float64(item.Quantity) + metricQuantity_normalized) * float64(*item.Rate))
+		calculatedAmount := (quantity * float64(*item.Rate))
 		intAmount := uint64(math.Round(calculatedAmount))
 		inv.Items[i].Amount = &intAmount
 		subtotal += intAmount
