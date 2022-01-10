@@ -38,6 +38,7 @@ type Invoice struct {
 	Date               string  `json:"date"`
 	Items              []Item  `json:"items"`
 	Tax                *uint64 `json:"tax,omitempty"`
+	Paid               bool    `json:"paid"`
 }
 
 type Item struct {
