@@ -14,13 +14,13 @@ import (
 )
 
 var itemRate1 = uint64(10000)
-var itemQuantity1 = uint64(3)
-var itemAmount1 = itemRate1 * uint64(itemQuantity1)
+var itemQuantity1 = uint64(3000)
+var itemAmount1 = itemRate1 * uint64(itemQuantity1) / 1000
 var itemRate2 = uint64(5000)
-var metricQuantity2 = uint64(543500)
+var itemQuantity2 = uint64(543500)
+var itemAmount2 = uint64(float64(itemRate2) * float64(itemQuantity2) / 1000)
 var unit1 = "m^2"
 var unit2 = "unit"
-var itemAmount2 = uint64(float64(itemRate2) * float64(metricQuantity2) / 1000)
 var itemTax1 = uint64(5000)
 var itemTax2 = uint64(6000)
 
@@ -59,8 +59,8 @@ func TestPostInvoice(t *testing.T) {
 		err    error
 	}{
 		"successful post": {
-			input:  Invoice{"invNo1", "PT A", "catatanInvoice", "catatanKwi", "keteranganKwitansi", "24/03/2019", []Item{Item{"Paku", "", &itemRate1, false, unit2, &itemQuantity1, &itemAmount1}, Item{"Dua", "", &itemRate2, true, unit1, &metricQuantity2, &itemAmount2}}, &itemTax1, false},
-			output: Invoice_db{Invoice{"invNo1", "PT A", "catatanInvoice", "catatanKwi", "keteranganKwitansi", "24/03/2019", []Item{Item{"Paku", "", &itemRate1, false, unit2, &itemQuantity1, &itemAmount1}, Item{"Dua", "", &itemRate2, true, unit1, &metricQuantity2, &itemAmount2}}, &itemTax1, false}, id1, time.Now().Format("02/01/2006"), &total_1_2_tax1, &subtotal_1_2},
+			input:  Invoice{"invNo1", "PT A", "catatanInvoice", "catatanKwi", "keteranganKwitansi", "24/03/2019", []Item{Item{"Paku", "", &itemRate1, false, unit2, &itemQuantity1, &itemAmount1}, Item{"Dua", "", &itemRate2, true, unit1, &itemQuantity2, &itemAmount2}}, &itemTax1, false},
+			output: Invoice_db{Invoice{"invNo1", "PT A", "catatanInvoice", "catatanKwi", "keteranganKwitansi", "24/03/2019", []Item{Item{"Paku", "", &itemRate1, false, unit2, &itemQuantity1, &itemAmount1}, Item{"Dua", "", &itemRate2, true, unit1, &itemQuantity2, &itemAmount2}}, &itemTax1, false}, id1, time.Now().Format("02/01/2006"), &total_1_2_tax1, &subtotal_1_2},
 			err:    nil,
 		},
 	}

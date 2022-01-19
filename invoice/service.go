@@ -42,13 +42,13 @@ type Invoice struct {
 }
 
 type Item struct {
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Rate        *uint64 `json:"rate"`
-	IsMetric    bool    `json:"isMetric"`
-	Unit        string  `json:"unit"`
-	Quantity    *uint64 `json:"quantity"`
-	Amount      *uint64 `json:"amount"`
+	Name         string  `json:"name"`
+	Description  string  `json:"description"`
+	Rate         *uint64 `json:"rate"`
+	IsHideAmount bool    `json:"isHideAmount"`
+	Unit         string  `json:"unit"`
+	Quantity     *uint64 `json:"quantity"`
+	Amount       *uint64 `json:"amount"`
 }
 
 type invoiceService struct {
@@ -73,13 +73,10 @@ func (srv invoiceService) PostInvoice(ctx context.Context, inv Invoice) (Invoice
 	// Calculate total: sum all items + tax
 	var total uint64
 	var subtotal uint64
-	var quantity float64
+	var normalizedQuantity float64
 	for i, item := range inv.Items {
-		quantity = float64(*item.Quantity)
-		if item.IsMetric {
-			quantity /= 1000
-		}
-		calculatedAmount := (quantity * float64(*item.Rate))
+		normalizedQuantity = float64(*item.Quantity) / 1000
+		calculatedAmount := (normalizedQuantity * float64(*item.Rate))
 		intAmount := uint64(math.Round(calculatedAmount))
 		inv.Items[i].Amount = &intAmount
 		subtotal += intAmount
@@ -128,13 +125,10 @@ func (srv invoiceService) PutInvoice(ctx context.Context, id string, inv Invoice
 	// Calculate total: sum all items + tax
 	var total uint64
 	var subtotal uint64
-	var quantity float64
+	var normalizedQuantity float64
 	for i, item := range inv.Items {
-		quantity = float64(*item.Quantity)
-		if item.IsMetric {
-			quantity /= 1000
-		}
-		calculatedAmount := (quantity * float64(*item.Rate))
+		normalizedQuantity = float64(*item.Quantity) / 1000
+		calculatedAmount := (normalizedQuantity * float64(*item.Rate))
 		intAmount := uint64(math.Round(calculatedAmount))
 		inv.Items[i].Amount = &intAmount
 		subtotal += intAmount
