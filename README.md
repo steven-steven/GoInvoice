@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/steven-steven/electroninvoice/blob/master/readme_assets/dpLogo.jpg" width="50" />
+  <img src="https://steven-steven.github.io/electroninvoice/readme_assets/dpLogo.jpg" width="50" />
  </p>
 
 Backend API that powers the DP Invoice APP. See the [native app](https://github.com/steven-steven/electroninvoice) built in Electron.
